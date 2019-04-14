@@ -9,12 +9,32 @@ editor_options:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-#Pop gen stats
+#Pop gen stats: adapted from https://popgen.nescent.org/StartSNP.html
 
 ```{r}
 library("adegenet")
 library("hierfstat")
 library("pegas")
-```
+library("vcfR")
 # make sure they are installed in your R Studio
+```
+
+```{r}
+setwd("~/Github/Erigenia")
+```
+
+```{r}
+vcf <- read.vcfR("erigeniaC.vcf", verbose=FALSE)
+```
+
+```{r}
+erigenia_genind <- vcfR2genind(vcf)
+#takes a long time (almost 2 days)
+```
+
+```{r}
+save(erigenia_genind, file="erigenia_genind.RData")
+#saves genind file separately for later use
+```
+
 
