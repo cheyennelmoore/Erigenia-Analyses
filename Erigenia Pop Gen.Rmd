@@ -34,7 +34,26 @@ erigenia_genind <- vcfR2genind(vcf)
 
 ```{r}
 save(erigenia_genind, file="erigenia_genind.RData")
-#saves genind file separately for later use
+#saves genind file separately for later use as needed
 ```
 
+```{r}
+erigenia_genlight <- vcfR2genlight(vcf)
+#make genlight instead of genind, better for NGS. Retains only loci with 2 (or fewer) alleles/locus
+```
+
+```{r}
+save(erigenia_genlight, file="erigenia_genlight.Rdata")
+#saves genlight file separately for later use as needed
+```
+
+```{r}
+div <- summary(erigenia_genind)
+#look at observed vs expected heterozygosity
+```
+
+```{r}
+save (div, file="erigenia_genind_div.Rdata")
+#saves div file separately for later use/averaging
+```
 
