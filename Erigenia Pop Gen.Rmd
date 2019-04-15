@@ -56,4 +56,4 @@ div <- summary(erigenia_genind)
 save (div, file="erigenia_genind_div.Rdata")
 #saves div file separately for later use/averaging
 ```
-
+hi
