@@ -30,30 +30,61 @@ vcf <- read.vcfR("erigeniaC.vcf", verbose=FALSE)
 ```{r}
 erigenia_genind <- vcfR2genind(vcf)
 #takes a long time (almost 2 days)
+#alternatively: load("/Github/Erigenia-Analyses/erigenia_genint.rdata")
 ```
 
 ```{r}
-save(erigenia_genind, file="erigenia_genind.RData")
+save(erigenia_genind, file="erigenia_genind.rdata")
 #saves genind file separately for later use as needed
 ```
 
 ```{r}
 erigenia_genlight <- vcfR2genlight(vcf)
 #make genlight instead of genind, better for NGS. Retains only loci with 2 (or fewer) alleles/locus
+#alternatively: load("~/Github/Erigenia-Analyses/erigenia_genlight.rdata")
 ```
 
 ```{r}
-save(erigenia_genlight, file="erigenia_genlight.Rdata")
+save(erigenia_genlight, file="erigenia_genlight.rdata")
 #saves genlight file separately for later use as needed
+#may need to first run this: load("~/Github/Erigenia-Analyses/erigenia_genind.rdata")
 ```
 
 ```{r}
 div <- summary(erigenia_genind)
-#look at observed vs expected heterozygosity
+#look at observed vs expected heterozygosity, takes a while.
 ```
 
 ```{r}
 save (div, file="erigenia_genind_div.Rdata")
 #saves div file separately for later use/averaging
 ```
-hi
+
+```{r}
+plot (div$Hobs, xlab="Locus number", ylab="Observed Heterozogosity", main="Observed heterozygosity per locus")
+#this is for all individuals/pops; overall, heterozygosity in Erigenia looks to skew low... but would be good to figure out an average per pop and display that instead
+```
+
+```{r}
+plot(div$Hobs,div$Hexp, xlab="Hobs", ylab="Hexp", main="Expected heterozygosity as a function of observed heterozygosity per locus")
+#not 100% sure what to make of this
+```
+
+```{r}
+bartlett.test(list(div$Hexp, div$Hobs))
+#a test for homogeneity of variances, Ho: Hexp=Hobs
+#the result=reject Ho, very strongly. A strong difference between expected and observed heterozygosity across Erigenia.
+```
+
+```{r}
+erigeniaCdata <- read.table("~/Github/Erigenia-Analyses/erigeniaC.vcf", header=TRUE)
+dim(erigeniaCdata)
+#this is from top of tutorial, need it to do the basic stats part
+```
+
+```{r}
+locus<-
+```
+
+
+
