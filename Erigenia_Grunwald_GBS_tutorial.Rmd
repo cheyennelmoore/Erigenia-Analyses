@@ -1,0 +1,65 @@
+---
+title: "Erigenia analyses based on Grunwald Lab GBS tutorial"
+author: "McDonnell, Moore"
+date: "May 2019"
+output:
+  github_document:
+    toc: true
+    toc_depth: 2
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##getting the data ready
+```{r read in vcf file}
+setwd()
+Erigenia_vcf <- read.vcfR("erigeniaC.vcf")
+```
+
+
+```{r population data}
+setwd()
+pop_data <- read.table("populations_tabdelim.txt", sep = "\t", header = TRUE)
+```
+set the working directory and read in the pop file :)
+
+
+Edit this if you use it... I'm not sure if this actually works. This is not from Grunwald tute
+```{r vcf to genind}
+indNames<-c("NC_SWAI_001", "NC_SWAI_002", "NC_BEEC_003", "NC_SWAI_003", "NC_BEEC_001", "NC_BEEC_002", "WV_CRAN_001", "WV_CRAN_002", "WV_BFAL_002", "WV_BFAL_003", "WV_GAUD_002", "WV_GAUD_003", "WV_CRAN_003", "WV_GAUD_001", "NC_ELKK_002", "NC_ELKK_001", "NC_JEFF_002", "WV_WTOP_002", "WV_WTOP_001", "WV_BFAL_001", "NC_PISG_002", "NC_PISG_001", "NC_PISG_003", "NC_MITC_002", "NC_JACK_001", "NC_MITC_003", "NC_ELKK_003", "NC_GRAN_001", "NC_GRAN_002", "NC_GRAN_003", "NC_JEFF_001", "NC_JEFF_003", "NC_MITC_001", "VA_MLAK_002", "VA_MLAK_003", "TN_ROAN_001", "TN_ROAN_002", "TN_ROAN_003", "VA_MLAK_001", "NC_BUNC_003", "NC_BUNC_002", "NC_BUNC_001", "NC_JACK_003", "NC_JACK_002")
+```
+
+
+```{r vcf to genlight}
+Erigenia_genlight <- vcfR2genlight(Erigenia_vcf, ind.names)
+```
+
+```{r make sure data matched}
+all(colnames(Erigenia_vcf@gt)[-1] == pop_data$SRR)
+```
+change ssr to whatever individuals are
+
+```{r telling R about our data}
+ploidy(Erigenia_genlight) <- 2
+pop(Erigenia_genlight) <- pop_data$Site
+```
+change site to whatever populations are 
+
+```{r save genlight}
+save(Erigenia_genlight, file="Erigenia_genlight.RData")
+```
+
+```{r make genlight a table}
+#optional: do this to use with other programs- save the object 
+Erigenia_genlight_table <-write.csv(Erigenia_genlight)
+```
+
+```{r checking the data}
+Erigenia_genlight
+```
+
+##Ready for analyses
