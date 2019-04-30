@@ -47,7 +47,7 @@ change ssr to whatever individuals are
 ploidy(Erigenia_genlight) <- 2
 pop(Erigenia_genlight) <- pop_data$Site
 ```
-change site to whatever populations are 
+change site to whatever populations are I think you can also do this with individuals if you want
 
 ```{r save genlight}
 save(Erigenia_genlight, file="Erigenia_genlight.RData")
