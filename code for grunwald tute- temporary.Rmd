@@ -1,0 +1,85 @@
+---
+title: "temp- to be added to Grunwald Red"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##UPGMA tree
+
+will need to edit this with the pops
+```{r legend for tree}
+legend= c("NC_BEEC", "NC_BUNC", "NC_ELKK", "NC_GRAN", "NC_JACK", "NC_JEFF", "NC_MITC", "NC_PISG", "NC_SWAI", "TN_ROAN", "VA_MLAK", "WV_BFAL", "WV_CRAN", "WV_GAUD","WV_WTOP")
+```
+
+
+We did this already can use one we already have
+```{r creating a distance matrix}
+x.dist <- dist(Erigenia_genlight)
+```
+
+#can use color brewer or make your own palette
+```{r making a tree}
+Erigenia_UPGMA_tree <- aboot(s_vib_gen, tree = "upgma", distance = bitwise.dist, sample = 100, showtree = F, cutoff = 50, quiet = T)
+
+#cols <- brewer.pal(n = nPop(colors), name = "Dark2")
+plot.phylo(s_vib_tree, cex = 0.8, font = 2, adj = 0, tip.color =  colors[pop(s_vib_gen)])
+nodelabels(s_vib_tree$node.label, adj = c(1.3, -0.5), frame = "n", cex = 0.8,font = 3, xpd = TRUE)
+#legend(35,10,c("CA","OR","WA"),cols, border = FALSE, bty = "n")
+legend('topleft', legend = c("CA","OR","WA"), fill = cols, border = FALSE, bty = "n", cex = 2)
+axis(side = 1)
+title(xlab = "Genetic distance (proportion of loci that are different)")
+```
+
+##Minimun Spanning Network
+```{r MSN}
+s_vib.dist <- bitwise.dist(s_vib_gen)
+#did this ^
+Erigenia.msn <- poppr.msn(Erigenia_genlight, s_vib.dist, showplot = FALSE, include.ties = T)
+
+node.size <- rep(3, times = nInd(Erigenia_genlight))
+names(node.size) <- indNames(Erigenia_genlight)
+vertex.attributes(Erigenia.msn$graph)$size <- node.size
+```
+```{r}
+set.seed(17)
+plot_poppr_msn(Erigenia_genlight, s_vib.msn, mlg=FALSE, palette = colors, gadj = 70)
+```
+change the palette
+
+```{r saving msn}
+#save(s_vib.dist, file= "s_vib.dist.RData")
+save(Erigenia.msn, file= "Erigenia.msn.RData")
+```
+
+##glPCA
+```{r glPCA}
+Erigenia.pca <- glPca(Erigenia_genlight, nf = 3)
+barplot(100*Erigenia.pca$eig/sum(Erigenia.pca$eig), col = heat.colors(50), main="PCA Eigenvalues")
+title(ylab="Percent of variance\nexplained", line = 2)
+title(xlab="Eigenvalues", line = 1)
+```
+retain 3 PCs
+
+```{r saving glPCA}
+save(Erigenia.pca, file= "Erigenia.pca.RData")
+```
+
+```{r with ggplot}
+Erigenis.pca.scores <- as.data.frame(Erigenai.pca$scores)
+Erigenia.pca.scores$pop <- pop(Erigenia_genlight)
+
+set.seed(17)
+p_1_3 <- ggplot(Erigenia.pca.scores, aes(x=PC1, y=PC2, colour=pop)) 
+p_1_3  <- p_1_3  + geom_point(size=2)
+#p_1_3  <- p_1_3  + stat_ellipse(level = 0.95, size = 1) -this doesn't work with theses points, but could be used for better clustering 
+p_1_3  <- p_1_3  + scale_color_manual(values = colors) 
+p_1_3  <- p_1_3  + geom_hline(yintercept = 0) 
+p_1_3  <- p_1_3  + geom_vline(xintercept = 0) 
+p_1_3  <- p_1_3  + theme_bw()
+
+p_1_3 
+```
+don't forget to change the color
