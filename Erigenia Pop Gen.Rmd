@@ -81,9 +81,12 @@ erigeniaCdata <- read.table("~/Github/Erigenia-Analyses/erigeniaC.vcf", header=T
 dim(erigeniaCdata)
 #this is from top of tutorial, need it to do the basic stats part
 ```
+```{r}
+save (erigeniaCdata, file="erigeniaCdata.Rdata")
+```
 
 ```{r}
-locus<-
+erigenia_genind_hierfstat <- genind2hierfstat (erigenia_genind)
 ```
 
 

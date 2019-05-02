@@ -14,6 +14,12 @@ editor_options:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+```{r}
+library(vcfR)
+library(poppr)
+library(hierfstat)
+```
+
 ##getting the data ready
 ```{r read in vcf file}
 setwd()
@@ -22,44 +28,115 @@ Erigenia_vcf <- read.vcfR("erigeniaC.vcf")
 
 
 ```{r population data}
-setwd()
-pop_data <- read.table("populations_tabdelim.txt", sep = "\t", header = TRUE)
-```
-set the working directory and read in the pop file :)
-
-
-Edit this if you use it... I'm not sure if this actually works. This is not from Grunwald tute
-```{r vcf to genind}
-indNames<-c("NC_SWAI_001", "NC_SWAI_002", "NC_BEEC_003", "NC_SWAI_003", "NC_BEEC_001", "NC_BEEC_002", "WV_CRAN_001", "WV_CRAN_002", "WV_BFAL_002", "WV_BFAL_003", "WV_GAUD_002", "WV_GAUD_003", "WV_CRAN_003", "WV_GAUD_001", "NC_ELKK_002", "NC_ELKK_001", "NC_JEFF_002", "WV_WTOP_002", "WV_WTOP_001", "WV_BFAL_001", "NC_PISG_002", "NC_PISG_001", "NC_PISG_003", "NC_MITC_002", "NC_JACK_001", "NC_MITC_003", "NC_ELKK_003", "NC_GRAN_001", "NC_GRAN_002", "NC_GRAN_003", "NC_JEFF_001", "NC_JEFF_003", "NC_MITC_001", "VA_MLAK_002", "VA_MLAK_003", "TN_ROAN_001", "TN_ROAN_002", "TN_ROAN_003", "VA_MLAK_001", "NC_BUNC_003", "NC_BUNC_002", "NC_BUNC_001", "NC_JACK_003", "NC_JACK_002")
+setwd("~/github/Erigenia-Analyses")
+pop_data <- read.table("population_data.Erigenia.txt", sep = "\t", header = TRUE)
 ```
 
+```{r}
+Erigenia_vcf <- read.vcfR("erigeniaC.vcf", verbose=FALSE)
+```
 
 ```{r vcf to genlight}
 Erigenia_genlight <- vcfR2genlight(Erigenia_vcf, ind.names)
 ```
 
-```{r make sure data matched}
-all(colnames(Erigenia_vcf@gt)[-1] == pop_data$SRR)
+```{r vcf to genind}
+Erigenia_genind_pops <- vcfR2genind(Erigenia_vcf, ind.names)
 ```
-change ssr to whatever individuals are
+
+```{r}
+save(Erigenia_genlight, file="Erigenia_genlight.rdata")
+```
+```{r}
+save(Erigenia_genind_pops, file="Erigenia_genind_pops.rdata")
+```
+
+```{r make sure data matched}
+all(colnames(Erigenia_vcf@gt)[-1] == pop_data$Access.ID)
+```
+You want a TRUE returned. if FALSE is returned, change srr to whatever individuals are if needed, IN ORDER
+
+
 
 ```{r telling R about our data}
 ploidy(Erigenia_genlight) <- 2
-pop(Erigenia_genlight) <- pop_data$Site
+pop(Erigenia_genlight) <- pop_data$Locality
 ```
-change site to whatever populations are I think you can also do this with individuals if you want
+change pop to whatever populations are defined as (here, locality per .txt) I think you can also do this with individuals if you want
 
-```{r save genlight}
+```{r}
+ploidy(Erigenia_genind_pops) <- 2
+pop(Erigenia_genind_pops) <- pop_data$Locality
+```
+
+
+```{r save genlight w/pops defined}
 save(Erigenia_genlight, file="Erigenia_genlight.RData")
 ```
+```{r}
+save(Erigenia_genind_pops, file="Erigenia_genind_pops.RData")
+```
 
-```{r make genlight a table}
+
+```{r make genlight a table, takes a while}
 #optional: do this to use with other programs- save the object 
 Erigenia_genlight_table <-write.csv(Erigenia_genlight)
+```
+```{r}
+Erigenia_genind_pops_table <-write.csv(Erigenia_genind_pops)
 ```
 
 ```{r checking the data}
 Erigenia_genlight
 ```
+```{r}
+Erigenia_genind_pops
+```
+```{r}
+Erigenia_pop<-c("PB", "PB", "PB", "PB", "PB", "PB", "PB", "PB", "PB", "PB", "PB", "PB", "PB", "PB", "PB", "PB", "PB", "PB", "PB", "PB", "YF", "YF", "YF", "YF", "YF", "YF", "YF", "YF", "YF", "YF", "YF", "YF", "YF", "YF", "YF", "SH", "SH", "SH", "SH", "SH", "SH", "SH", "SH", "SH", "SH", "MD", "MD", "MD", "MD", "CCP", "CCP", "CCP", "CCP", "CCP", "CCP", "CCP", "CCP", "CCP", "CCP", "CCP", "CCP", "CCP", "CCP", "CCP", "BTP", "BTP", "BTP", "BTP", "BTP", "BTP", "BTP", "BTP", "BTP", "BTP", "BTP", "BTP", "BTP", "BTP", "BTP", "RSSP", "RSSP", "RSSP", "RSSP", "RSSP", "RSSP", "RSSP", "RSSP", "RSSP", "RSSP", "RSSP", "RSSP", "RSSP", "RSSP", "RSSP", "RCSPWR", "RCSPWR", "RCSPWR", "RCSPWR", "RCSPWR", "RCSPWR", "RCSPWR", "RCSPWR", "RCSPWR", "RCSPWR", "RCSPWR", "RCSPWR", "RCSPWR", "RCSPWR", "RCSPWR", "SRCNA", "SRCNA", "SRCNA", "SRCNA", "SRCNA", "SRCNA", "SRCNA", "SRCNA", "SRCNA", "SRCNA", "SRCNA", "SRCNA", "SRCNA", "SRCNA", "SRCNA")
+```
+
+```{r turn genind to hierfstat object, add pops if needed using a vector }
+Erigenia_hierfstat <- genind2hierfstat(Erigenia_genind_pops, pop= Erigenia_pop)
+```
+```{r, save file}
+save(Erigenia_hierfstat, file="Erigenia_hierfstat.RData")
+```
 
 ##Ready for analyses
+
+```{r}
+library(ape)
+library(RColorBrewer)
+library(ade4)
+```
+
+```{r make a genetic distance matrix}
+Erigenia_genlight.dist <- dist(Erigenia_genlight)
+```
+
+```{r do same thing with poppr}
+Erigenia_genlight.dist.matrix <- poppr::bitwise.dist(Erigenia_genlight)
+```
+
+```{r make genlight with pop definitions, would be good for dropping pops subsequent analyses}
+Erigenia9 <- popsub(Erigenia_genlight, sublist = c("BTP", "CCP", "MD", "PB", "RCSPWR", "RSSP", "SH", "SRCNA", "YF"))
+```
+```{r make matrix of pop genetic distance}
+Erigenia9matrix <- poppr::bitwise.dist(Erigenia9, c(Erigenia9$pop))
+```
+```{r calculate nei distance with population matrix}
+neiErigenia9 <- nei.dist(Erigenia9matrix)
+```
+
+
+```{r from https://rdrr.io/cran/ade4/man/table.dist.html, graph display of ditance matrix, per pop (but we never got it to work for pops) }
+table.dist(Erigenia9matrix, x=1:(attr(Erigenia9matrix, "Size")), labels = as.character(Erigenia9matrix), clabel = 1, csize = 1, grid = TRUE)
+```
+
+
+
+
+
+
+
