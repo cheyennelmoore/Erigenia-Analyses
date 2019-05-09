@@ -110,7 +110,7 @@ library(ape)
 library(RColorBrewer)
 library(ade4)
 ```
-
+Below: useful for upgma tree, not for hierfstat work.
 ```{r make a genetic distance matrix}
 Erigenia_genlight.dist <- dist(Erigenia_genlight)
 ```
@@ -134,6 +134,13 @@ neiErigenia9 <- nei.dist(Erigenia9matrix)
 table.dist(Erigenia9matrix, x=1:(attr(Erigenia9matrix, "Size")), labels = as.character(Erigenia9matrix), clabel = 1, csize = 1, grid = TRUE)
 ```
 
+below: hierfstat work
+```{r}
+Erigenia.stats<-basic.stats(Erigenia_hierfstat,diploid=TRUE,digits=4)
+```
+```{r}
+Erigenia.stats.perloc.txt <- print(Erigenia.stats,perloc)
+```
 
 
 
