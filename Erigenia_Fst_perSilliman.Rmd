@@ -32,3 +32,69 @@ radiator_genind_a <- read_rds("/Volumes/Thunderbolt/Users/PostDoc/Github/Erigeni
 ```{r}
 radiator_hf_a <- read.fstat("/Volumes/Thunderbolt/Users/PostDoc/Github/Erigenia-Analyses/a118_radiator_genomic_converter_20190508a1444/radiator_data_20190508a1444.dat", na.s = c("0","00","000","0000","00000","000000","NA"))
 ```
+```{r}
+pop_order <- c("BTP","CCP","MD","PB","RCSPWR","RSSP","SH", "SRCNA", "YF")
+```
+This takes a long time (~30+ minutes)
+```{r}
+fst.mat<-genet.dist(radiator_hf_a, method = "WC84")
+```
+```{r}
+gindF.fst.mat.tri <- as.matrix(fst.mat)
+colnames(gindF.fst.mat.tri)<- pop_order
+rownames(gindF.fst.mat.tri)<- pop_order
+write.table(gindF.fst.mat.tri, file="ErigeniaFstWC84.pwfst", row.names=T,col.names=T)
+```
+
+```{r}
+newmelted<-read.csv("/Volumes/Thunderbolt/Users/PostDoc/Desktop/newmelted.csv", sep=",", header=TRUE)
+```
+
+```{r}
+melted <- melt(newmelted, na.rm = TRUE)
+```
+```{r}
+summary(melted$value)
+```
+plotting using ggplot2
+```{r}
+combined <- ggplot(data = melted, aes(Var2, Var1, fill = value))+ geom_tile(color = "white")+ 
+  scale_fill_gradient(low = "white", high = "red", name="FST")  +
+  ggtitle(expression(atop("Pairwise FST, WC (1984), Combined", atop(italic("N = 124, L = 9,243"), ""))))+
+  labs( x = "Sampling Site", y = "Sampling Site") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, size = 12, hjust = 1),axis.text.y = element_text(size = 13)) + 
+  coord_fixed()
+combined
+```
+relabel individuals by their geographic region
+```{r}
+hf_a_reg<- radiator_hf_a
+regions<- c("West", "West", "MD", "East", "West", "West", "East", "West", "East")
+hf_a_reg$Pop <- mapvalues(hf_a_reg$Pop, from =c(1,2,3,4,5,6,7,8,9), to = regions)
+```
+calculate fst matrix for regions
+```{r}
+fst.mat.reg <- genet.dist(hf_a_reg, method="WC84")
+```
+```{r}
+EW <- c("West", "MD", "East")
+EW.fst.mat.tri <- as.matrix(fst.mat.reg)
+EW.fst.mat.tri <- EW.fst.mat.tri[EW,EW]
+```
+```{r}
+write.table(EW.fst.mat.tri, file="ErigeniaFstWC84Reg.pwfst", row.names=T, col.names=T)
+EW.fst.mat.tri[lower.tri(fst.mat.reg, diag=TRUE)] <-NA
+melted.reg <- melt(EW.fst.mat.tri, na.rm=TRUE)
+```
+
+```{r}
+par(mfrow=c(2,1))
+ggplot(data = melted.reg, aes(Var2, Var1, fill = value))+ geom_tile(color = "white")+ 
+  scale_fill_gradient(low = "white", high = "red", name="FST")  +
+  ggtitle(expression(atop("Pairwise FST, WC (1984), Regions", atop(italic("N = 124, L = 9,243"), ""))))+
+  labs( x = "Region", y = "Region") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, size = 12, hjust = 1),axis.text.y = element_text(size = 13)) + 
+  coord_fixed()
+```
+need to remove MD. prob can't repeat above with 2 regions.
+
