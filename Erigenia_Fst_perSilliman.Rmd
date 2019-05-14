@@ -35,7 +35,7 @@ radiator_hf_a <- read.fstat("/Volumes/Thunderbolt/Users/PostDoc/Github/Erigenia-
 ```{r}
 pop_order <- c("BTP","CCP","MD","PB","RCSPWR","RSSP","SH", "SRCNA", "YF")
 ```
-This takes a long time (~30+ minutes)
+This takes a long time (~10 minutes)
 ```{r}
 fst.mat<-genet.dist(radiator_hf_a, method = "WC84")
 ```
@@ -96,5 +96,51 @@ ggplot(data = melted.reg, aes(Var2, Var1, fill = value))+ geom_tile(color = "whi
   theme(axis.text.x = element_text(angle = 45, vjust = 1, size = 12, hjust = 1),axis.text.y = element_text(size = 13)) + 
   coord_fixed()
 ```
-need to remove MD. prob can't repeat above with 2 regions.
+#need to remove MD. prob can't repeat above with 2 regions. 
+#MD removed! see end of Erigenia_Python_perSilliman.Rmd, made hierfstat & genlight (genind impossible.)
+```{r}
+setwd("~/github/Erigenia-Analyses/166_radiator_genomic_converter_20190513@1509")
+```
+```{r}
+radiator_genlight_a_noMD <- read_rds("/Volumes/Thunderbolt/Users/PostDoc/Github/Erigenia-Analyses/a166_radiator_genomic_converter_20190513a1509/radiator_genlight_20190513a1614.RData")
+```
+```{r}
+radiator_hf_a_noMD <- read.fstat("/Volumes/Thunderbolt/Users/PostDoc/Github/Erigenia-Analyses/a166_radiator_genomic_converter_20190513a1509/radiator_data_20190513a1509.dat", na.s = c("0","00","000","0000","00000","000000","NA"))
+```
+```{r}
+pop_order_noMD <- c("BTP","CCP","PB","RCSPWR","RSSP","SH", "SRCNA", "YF")
+```
+This takes a long time (~24 hrs for all snp's in Erigenia)
+```{r}
+noMD.fst.mat<-genet.dist(radiator_hf_a_noMD, method = "WC84")
+```
+```{r}
+noMD.gindF.fst.mat.tri <- as.matrix(noMD.fst.mat)
+colnames(noMD.gindF.fst.mat.tri)<- pop_order_noMD
+rownames(noMD.gindF.fst.mat.tri)<- pop_order_noMD
+write.table(noMD.gindF.fst.mat.tri, file="ErigeniaFstWC84.NoMD.pwfst", row.names=T,col.names=T)
+```
+use below read in edited melted csv, if needed. (add a,b,c, etc. as needed to orient pops W to E)
+```{r}
+newmelted_noMD<-read.csv("/Volumes/Thunderbolt/Users/PostDoc/Desktop/newmelted_noMD.csv", sep=",", header=TRUE)
+```
+melt the matrix made above
+```{r}
+melted_noMD <- melt(noMD.gindF.fst.mat.tri, na.rm = TRUE)
+```
+```{r}
+summary(newmelted_noMD$value)
+```
+plotting using ggplot2
+```{r}
+combined_noMD <- ggplot(data = newmelted_noMD, aes(Var2, Var1, fill = value))+ geom_tile(color = "white")+ 
+  scale_fill_gradient(low = "white", high = "red", name="FST")  +
+  ggtitle(expression(atop("Pairwise FST, WC (1984), Combined", atop(italic("N = 120, L = 220,427"), ""))))+
+  labs( x = "Sampling Site", y = "Sampling Site") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, size = 12, hjust = 1),axis.text.y = element_text(size = 13)) + 
+  coord_fixed()
+combined_noMD
+```
+
+
 
