@@ -1,0 +1,195 @@
+---
+title: "Following_Ostrea"
+author: "AJM & CLM"
+date: "5/3/2019"
+output: github_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+filerting of VCF file from ipyrad: sample coverage of 75% (filter out SNP's missing in >25% of samples), only biallelic SNP's, needs to be done in terminal. Install vcftools via homebrew.
+
+```{bash}
+vcftools --vcf .../erigeniaC_outfiles/erigeniaC.vcf --recode --recode-INFO-all --min-alleles 2 --max-alleles 2 --max-missing 0.75 --out filtered
+```
+VCFtools - 0.1.16
+(C) Adam Auton and Anthony Marcketta 2009
+Parameters as interpreted:
+	--vcf /Volumes/G-DRIVEUSB/ErigeniaPEdata&runs/ErigeniaC/erigeniaC_outfiles/erigeniaC.vcf
+	--recode-INFO-all
+	--max-alleles 2
+	--min-alleles 2
+	--max-missing 0.75
+	--out filtered
+	--recode
+After filtering, kept 124 out of 124 Individuals
+Outputting VCF file...
+After filtering, kept 16019 out of a possible 439647 Sites
+Run Time = 20.00 seconds
+
+```{bash}
+vcftools --vcf /Volumes/G-DRIVEUSB/ErigeniaPEdata\&runs/ErigeniaC/erigeniaC_outfiles/vcftools_outfiles/filtered.recode.vcf --missing-indv --out filtered
+
+```
+VCFtools - 0.1.16
+(C) Adam Auton and Anthony Marcketta 2009
+Parameters as interpreted:
+	--vcf /Volumes/G-DRIVEUSB/ErigeniaPEdata&runs/ErigeniaC/erigeniaC_outfiles/vcftools_outfiles/filtered.recode.vcf
+	--missing-indv
+	--out filtered
+After filtering, kept 124 out of 124 Individuals
+Outputting Individual Missingness
+After filtering, kept 16019 out of a possible 16019 Sites
+Run Time = 1.00 seconds
+
+```{python}
+IN = open("filtered.imiss","r")
+OUT_strata = open("erigenia.strata","w")
+OUT_pop = open("erigenia.strata.pop","w")
+loc_dict = {'eribul_AJM366':['PB', 'PB', 'East', '39.75297', '-76.26442', 'PA'],
+            'eribul_AJM367':['YF', 'YF', 'East', '39.842583', '-76.441405', 'PA'],
+            'eribul_AJM368':['SH', 'SH', 'East', '39.9338034', '-76.4644247', 'PA'],
+            'eribul_Hil13553':['MD', 'MD', 'East', '38.9876', '-77.2457', 'MD'],
+            'eribul_Rie8123':['MD', 'MD', 'East', '39.7115', '-77.8078', 'MD'],
+            'eribul_Rie8145a':['MD', 'MD', 'East', '39.7115', '-77.8078', 'MD'],
+            'eribul_Rie8145b':['MD', 'MD', 'East', '39.7115', '-77.8078', 'MD'],
+            'eribul_SS2094':['CCP', 'CCP', 'West', '40.1736', '-79.78346', 'PA'],
+            'eribul_SS2095':['BTP', 'BTP', 'West', '40.301956', '-79.773031', 'PA'],
+            'eribul_SS2096':['RSSP', 'RSSP', 'West', '39.88173', '-80.43642', 'PA'],
+            'eribul_SSsn':['RCSPWR', 'RCSPWR', 'West', '40.507465', '-80.360747', 'PA'],
+            'eribul_SSsn_S':['SRCNA', 'SRCNA', 'West', '41.036531', '-80.103539', 'PA']}
+IN.next()
+OUT_strata.write("INDIVIDUALS\tSTRATA\tLOCATION\tREGION\tLATITUDE\tLONGITUDE\tSTATE\n")
+for line in IN:
+    name = line.split()[0]
+    pop = name.split("_")[0]
+    library = name.split("_")[2]
+    OUT_strata.write(name+"\t"+'\t'.join(map(str,loc_dict[pop]))+"\t"+state+"\n")
+    OUT_pop.write(name+"\t"+loc_dict[pop][0]+"\n")
+    
+IN.close()
+OUT_strata.close()
+OUT_pop.close()
+```
+
+from Ostrea_PopStructure doc, skip "Filtering loci by departures from HWE" as well as filtering for minor allele freqs, etc.
+and now, 
+Subset 1 SNP/GBS locus:
+
+## Code to subset one SNP per GBS locus from a VCF file. Chooses the SNP
+## with the highest sample coverage. If there is a tie, chooses the 1st SNP in the locus. 
+## May be specific to VCF format output from ipyrad.
+## This is also in script format in Github as subsetSNPs.py
+we ran subsetSNPs.py locally:
+python subsetSNPs.py erigeniaC.vcf erigeniaCU.vcf
+Total SNPS: 439647
+Unlinked SNPs: 77044
+
+erigeniaCU.vcf will be used for PCA (could also use for treemix)
+we skipped "Making outlier-only & neutral-only .vcf files" section.
+
+in "Making files for other programs" we will turn filtered .vcf files into other appropriate formats (genind, hierfstat, and maybe geno). 3 parts, we are following along with the section "combined dataset".
+
+```{r}
+library("adegenet")
+library("radiator")
+if (!require("devtools")) install.packages("devtools")
+devtools::install_github("tidyverse/dplyr", force=TRUE)
+library("dplyr")
+
+```
+
+```{r}
+Erigenia_filtered.recode.vcf <- read.vcfR("Erigenia_filtered.recode.vcf")
+```
+```{r}
+Erigenia.strata<-read.table("Erigenia.strata",sep="\t",header=TRUE)
+```
+
+```{r}
+if (!require("devtools")) install.packages("devtools")
+devtools::install_github("thierrygosselin/radiator", force=TRUE)
+library("radiator")
+```
+```{r}
+radiator::detect_genomic_format(data="Erigenia_filtered.recode.vcf")
+```
+read in vcf file made via vcftools above, prepare to filter using radiator
+```{r}
+Erigenia_filtered.recode.vcf <- read_vcf("Erigenia_filtered.recode.vcf")
+```
+
+Use radiator (a genomic converter) to convert vcf file to a genind object and a hierfstat object. Keeps markers common in all populations. hierfstat file made = radiator_data_20190508@1444.dat
+genind also made with a logical name.
+#useful links for radiator: https://rdrr.io/github/thierrygosselin/radiator/man/read_strata.html, https://rdrr.io/github/thierrygosselin/radiator/man/genomic_converter.html
+```{r}
+rad.filt <- radiator::genomic_converter("Erigenia_filtered.recode.vcf",
+                       strata=Erigenia.strata,
+                       output = c("genind","hierfstat"),
+                       parallel.core = 1, verbose=TRUE)
+                        
+```
+
+
+read in unlinked vcf file made via vcftools, prepare to convert/filter using radiator
+```{r}
+ErigeniaCU.vcf <- read_vcf("ErigeniaCU.vcf")
+```
+
+Use radiator to convert unlinked vcf file to a genind object and a genlight object (for pca in glpca pkg) Keeps markers common in all populations. 
+```{r}
+rad.filt.u <- radiator::genomic_converter("ErigeniaCU.vcf",
+                       strata=Erigenia.strata,
+                       output = c("genind", "genlight"),
+                       parallel.core = 1, verbose=TRUE)
+                        
+```
+Make input for pcadapt: a table with the allele counts per individual. Saves the table stored in a genind object.
+```{r}
+library("readr")
+radiator_genind_u <- read_rds("/Volumes/Thunderbolt/Users/PostDoc/Github/Erigenia-Analyses/126_radiator_genomic_converter_20190508@1524/radiator_genind_u.RData")
+```
+```{r}
+Erigenia_u_table <- write.table(radiator_genind_u,sep = "\t",row.names = T,col.names = T,quote = F )
+```
+
+
+#Now to remove MD individuals for downstream analysis
+#useful links for radiator: https://rdrr.io/github/thierrygosselin/radiator/man/read_strata.html, https://rdrr.io/github/thierrygosselin/radiator/man/genomic_converter.html
+Use radiator (a genomic converter) to convert vcf file to a genind object and a hierfstat object. Keeps markers common in all populations. hierfstat file looks like = radiator_data_20190508@1444.dat
+genind also made, with a logical name.
+
+```{r}
+library("adegenet")
+library("radiator")
+if (!require("devtools")) install.packages("devtools")
+devtools::install_github("tidyverse/dplyr", force=TRUE)
+library("dplyr")
+```
+
+read in vcf file made via vcftools, prepare to convert/filter using radiator (use unlinked vcf for pca)
+```{r}
+erigeniaC.vcf <- read_vcf("erigeniaC.vcf")
+```
+use read_strata and pop.select in radiator to eliminate MD population (this works, but eliminated all other data columns except individual and pop, use code below this to keep other columns)
+```{r}
+read_strata(Erigenia.strata, pop.select = c("BTP","CCP","PB","RCSPWR","RSSP","SH", "SRCNA", "YF"))
+```
+manually edited old strata file to delete MD individuals, this allows retention of other data columns
+```{r}
+Erigenia.strata.noMD<-read.table("/Volumes/Thunderbolt/Users/PostDoc/Github/Erigenia-Analyses/Erigenia.strata_noMD", sep="\t", header=TRUE)
+```
+
+
+Use radiator to convert unlinked vcf file to a genind object and a genlight object (for pca in glpca pkg) Keeps markers common in all populations. Takes a long time! W/o MD, >2x more SNPs.
+```{r}
+rad.filt.noMD <- radiator::genomic_converter("erigeniaC.vcf",
+                       strata=Erigenia.strata.noMD,
+                       output = c("genlight", "hierfstat"),
+                       parallel.core = 1, verbose=TRUE)
+```
+
