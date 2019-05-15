@@ -120,6 +120,16 @@ colnames(noMD.gindF.fst.mat.tri)<- pop_order_noMD
 rownames(noMD.gindF.fst.mat.tri)<- pop_order_noMD
 write.table(noMD.gindF.fst.mat.tri, file="ErigeniaFstWC84.NoMD.pwfst", row.names=T,col.names=T)
 ```
+             BTP       CCP        PB    RCSPWR      RSSP        SH     SRCNA        YF
+BTP    0.0000000 0.3072230 0.5573158 0.2177214 0.2288916 0.6100386 0.2217568 0.5040910
+CCP    0.3072230 0.0000000 0.6111765 0.2921333 0.2962880 0.6748338 0.2919878 0.5489660
+PB     0.5573158 0.6111765 0.0000000 0.4682329 0.4692480 0.3247984 0.4538422 0.1967257
+RCSPWR 0.2177214 0.2921333 0.4682329 0.0000000 0.1639937 0.4988519 0.1670948 0.4118465
+RSSP   0.2288916 0.2962880 0.4692480 0.1639937 0.0000000 0.4947547 0.1871296 0.4331413
+SH     0.6100386 0.6748338 0.3247984 0.4988519 0.4947547 0.0000000 0.4816955 0.2401579
+SRCNA  0.2217568 0.2919878 0.4538422 0.1670948 0.1871296 0.4816955 0.0000000 0.4069650
+YF     0.5040910 0.5489660 0.1967257 0.4118465 0.4331413 0.2401579 0.4069650 0.0000000
+
 use below read in edited melted csv, if needed. (add a,b,c, etc. as needed to orient pops W to E)
 ```{r}
 newmelted_noMD<-read.csv("/Volumes/Thunderbolt/Users/PostDoc/Desktop/newmelted_noMD.csv", sep=",", header=TRUE)
@@ -142,7 +152,31 @@ combined_noMD <- ggplot(data = newmelted_noMD, aes(Var2, Var1, fill = value))+ g
 combined_noMD
 ```
 
+#########################calculating regional fst's for reporting only (no graphs)
+relabel individuals by their geographic region
+```{r}
+hf_noMD_reg <- radiator_hf_a_noMD
+regions<- c("West", "West", "East", "West", "West", "East", "West", "East")
+hf_noMD_reg$Pop <- mapvalues(hf_noMD_reg$Pop, from =c(1,2,3,4,5,6,7,8), to = regions)
+```
+```{r}
+noMD.fst.mat.reg <- genet.dist(hf_noMD_reg, method="WC84")
+```
 
+```{r}
+EW <- c("West", "East")
+EW.fst.mat.tri <- as.matrix(noMD.fst.mat.reg)
+EW.fst.mat.tri <- EW.fst.mat.tri[EW,EW]
+```
+```{r}
+write.table(EW.fst.mat.tri, file="ErigeniaFstWC84EW.pwfst", row.names=T, col.names=T)
+EW.fst.mat.tri[lower.tri(noMD.fst.mat.reg, diag=TRUE)] <-NA
+EW.fst.mat.tri
+```
+output
+      West      East
+West   NA 0.3768538
+East   NA        NA
 
 
 
@@ -280,42 +314,4 @@ YFHet <- summary(YF)
 bartlett.test(list(YFHet$Hexp, SHHet$Hobs))
 ```
 Bartlett's K-squared = 6642.3, df = 1, p-value < 2.2e-16
-
-
-
-
-
-
-
-
-
-
-
-
-
-calculate fst matrix for regions for reporting values in a table (not for a graph.)
-```{r}
-fst.mat.reg <- genet.dist(hf_a_reg, method="WC84")
-```
-```{r}
-EW <- c("West", "MD", "East")
-EW.fst.mat.tri <- as.matrix(fst.mat.reg)
-EW.fst.mat.tri <- EW.fst.mat.tri[EW,EW]
-```
-```{r}
-write.table(EW.fst.mat.tri, file="ErigeniaFstWC84Reg.pwfst", row.names=T, col.names=T)
-EW.fst.mat.tri[lower.tri(fst.mat.reg, diag=TRUE)] <-NA
-melted.reg <- melt(EW.fst.mat.tri, na.rm=TRUE)
-```
-
-```{r}
-par(mfrow=c(2,1))
-ggplot(data = melted.reg, aes(Var2, Var1, fill = value))+ geom_tile(color = "white")+ 
-  scale_fill_gradient(low = "white", high = "red", name="FST")  +
-  ggtitle(expression(atop("Pairwise FST, WC (1984), Regions", atop(italic("N = 124, L = 9,243"), ""))))+
-  labs( x = "Region", y = "Region") + 
-  theme(axis.text.x = element_text(angle = 45, vjust = 1, size = 12, hjust = 1),axis.text.y = element_text(size = 13)) + 
-  coord_fixed()
-```
-
 
