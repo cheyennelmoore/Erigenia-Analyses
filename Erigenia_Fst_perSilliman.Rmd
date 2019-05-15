@@ -141,7 +141,14 @@ combined_noMD <- ggplot(data = newmelted_noMD, aes(Var2, Var1, fill = value))+ g
   coord_fixed()
 combined_noMD
 ```
-need a genind, convert no md vcf to genind using VCFtools (manual/site: https://vcftools.github.io/man_latest.html)
+
+
+
+
+
+
+
+need a genind to do bartlett test of observed vs expected heterozygosity, convert no md vcf to genind using VCFtools (manual/site: https://vcftools.github.io/man_latest.html)
 
 ```{bash}
 vcftools --vcf erigeniaC.vcf --recode --recode-INFO-all --min-alleles 2 --max-alleles 2 --max-missing 0.75 --keep indiv.txt --out filtered_noMD
@@ -174,11 +181,141 @@ library(vcfR)
 ```{r}
 Erigenia_filtered_noMD.recode.genind <- vcfR2genind(Erigenia_filtered_noMD.recode.vcf)
 ```
+```{r}
+save(Erigenia_filtered_noMD.recode.genind,file="Erigenia_filtered_noMD.recode.genind.Rdata")
+```
+assigning populations to samples, assuming samples are in same order as in vcf.
+```{r}
+pop(Erigenia_filtered_noMD.recode.genind)<-as.factor(c("PB","PB","PB","PB","PB","PB","PB","PB","PB","PB","PB","PB","PB","PB","PB","PB","PB","PB","PB","PB","YF","YF","YF","YF","YF","YF","YF","YF","YF","YF","YF","YF","YF","YF","YF","SH","SH","SH","SH","SH","SH","SH","SH","SH","SH","CCP","CCP","CCP","CCP","CCP","CCP","CCP","CCP","CCP","CCP","CCP","CCP","CCP","CCP","CCP","BTP","BTP","BTP","BTP","BTP","BTP","BTP","BTP","BTP","BTP","BTP","BTP","BTP","BTP","BTP","RSSP","RSSP","RSSP","RSSP","RSSP","RSSP","RSSP","RSSP","RSSP","RSSP","RSSP","RSSP","RSSP","RSSP","RSSP","RCSPWR","RCSPWR","RCSPWR","RCSPWR","RCSPWR","RCSPWR","RCSPWR","RCSPWR","RCSPWR","RCSPWR","RCSPWR","RCSPWR","RCSPWR","RCSPWR","RCSPWR","SRCNA","SRCNA","SRCNA","SRCNA","SRCNA","SRCNA","SRCNA","SRCNA","SRCNA","SRCNA","SRCNA","SRCNA","SRCNA","SRCNA","SRCNA"))
+popNames(Erigenia_filtered_noMD.recode.genind)
+```
+
+use tut here https://popgen.nescent.org/StartSNP.html to get Ho/Hexp, Bartlett test, etc. for all of Erigenia in PA.
+```{r}
+library("pegas")
+```
+```{r}
+ErigeniaHet <- summary(Erigenia_filtered_noMD.recode.genind)
+ErigeniaHet
+```
+```{r}
+names(ErigeniaHet)
+```
+```{r}
+plot(ErigeniaHet$Hobs, xlab="Locus number", ylab="Observed heterozygosity", main="Observed heterozygosity per locus")
+```
+```{r}
+plot(ErigeniaHet$Hobs, ErigeniaHet$Hexp, xlab="Observed heterozygosity", ylab="Expected heterozygosity", main="He as a function of Ho, per locus")
+```
+```{r}
+bartlett.test(list(ErigeniaHet$Hexp, ErigeniaHet$Hobs))
+```
+	Bartlett test of homogeneity of variances
+Bartlett's K-squared = 24950, df = 1, p-value < 2.2e-16
+wow: across PA, Ho is very low, statistically significantly so.
+
+Now, separate pops and repeat Bartlett for each.
+Use seppop in adegenet to split the genind by population. use pop=NULL to let it use the pop slot in the big genind, makes a list.
+```{r}
+temp <- seppop(Erigenia_filtered_noMD.recode.genind)
+```
+make individual geninds from the list
+```{r}
+PB <- temp$PB
+BTP <- temp$BTP
+CCP <- temp$CCP
+RCSPWR <- temp$RCSPWR
+RSSP <- temp$RSSP
+SH <- temp$SH
+SRCNA <- temp$SRCNA
+YF <- temp$YF
+```
+
+each pop can now be called! do bartletts for each.
+```{r}
+PBHet <- summary(PB)
+bartlett.test(list(PBHet$Hexp, PBHet$Hobs))
+```
+Bartlett's K-squared = 7552.4, df = 1, p-value < 2.2e-16
+woo!
+
+```{r}
+BTPHet <- summary(BTP)
+bartlett.test(list(BTPHet$Hexp, BTPHet$Hobs))
+```
+Bartlett's K-squared = 5504, df = 1, p-value < 2.2e-16
+
+```{r}
+CCPHet <- summary(CCP)
+bartlett.test(list(CCPHet$Hexp, CCPHet$Hobs))
+```
+Bartlett's K-squared = 7075.6, df = 1, p-value < 2.2e-16
+
+```{r}
+RCSPWRHet <- summary(RCSPWR)
+bartlett.test(list(RCSPWRHet$Hexp, RCSPWRHet$Hobs))
+```
+Bartlett's K-squared = 6327.5, df = 1, p-value < 2.2e-16
+
+```{r}
+RSSPHet <- summary(RSSP)
+bartlett.test(list(RSSPHet$Hexp, RSSPHet$Hobs))
+```
+Bartlett's K-squared = 4835.7, df = 1, p-value < 2.2e-16
+
+```{r}
+SHHet <- summary(SH)
+bartlett.test(list(SHHet$Hexp, SHHet$Hobs))
+```
+Bartlett's K-squared = 1318.8, df = 1, p-value < 2.2e-16
+
+```{r}
+SRCNAHet<- summary(SRCNA)
+bartlett.test(list(SRCNAHet$Hexp, SHHet$Hobs))
+```
+Bartlett's K-squared = 11485, df = 1, p-value < 2.2e-16
+
+```{r}
+YFHet <- summary(YF)
+bartlett.test(list(YFHet$Hexp, SHHet$Hobs))
+```
+Bartlett's K-squared = 6642.3, df = 1, p-value < 2.2e-16
 
 
 
 
-may also need to use hierfstat or similar to generate non-comparative Fst's per pop for reporting in a table.
 
+
+
+
+
+
+
+
+
+calculate fst matrix for regions for reporting values in a table (not for a graph.)
+```{r}
+fst.mat.reg <- genet.dist(hf_a_reg, method="WC84")
+```
+```{r}
+EW <- c("West", "MD", "East")
+EW.fst.mat.tri <- as.matrix(fst.mat.reg)
+EW.fst.mat.tri <- EW.fst.mat.tri[EW,EW]
+```
+```{r}
+write.table(EW.fst.mat.tri, file="ErigeniaFstWC84Reg.pwfst", row.names=T, col.names=T)
+EW.fst.mat.tri[lower.tri(fst.mat.reg, diag=TRUE)] <-NA
+melted.reg <- melt(EW.fst.mat.tri, na.rm=TRUE)
+```
+
+```{r}
+par(mfrow=c(2,1))
+ggplot(data = melted.reg, aes(Var2, Var1, fill = value))+ geom_tile(color = "white")+ 
+  scale_fill_gradient(low = "white", high = "red", name="FST")  +
+  ggtitle(expression(atop("Pairwise FST, WC (1984), Regions", atop(italic("N = 124, L = 9,243"), ""))))+
+  labs( x = "Region", y = "Region") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, size = 12, hjust = 1),axis.text.y = element_text(size = 13)) + 
+  coord_fixed()
+```
 
 
