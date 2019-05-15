@@ -141,6 +141,44 @@ combined_noMD <- ggplot(data = newmelted_noMD, aes(Var2, Var1, fill = value))+ g
   coord_fixed()
 combined_noMD
 ```
+need a genind, convert no md vcf to genind using VCFtools (manual/site: https://vcftools.github.io/man_latest.html)
+
+```{bash}
+vcftools --vcf erigeniaC.vcf --recode --recode-INFO-all --min-alleles 2 --max-alleles 2 --max-missing 0.75 --keep indiv.txt --out filtered_noMD
+```
+VCFtools - 0.1.16
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--vcf erigeniaC.vcf
+	--keep indiv.txt
+	--recode-INFO-all
+	--max-alleles 2
+	--min-alleles 2
+	--max-missing 0.75
+	--out filtered_noMD
+	--recode
+
+Keeping individuals in 'keep' list
+After filtering, kept 120 out of 124 Individuals
+Outputting VCF file...
+After filtering, kept 22624 out of a possible 439647 Sites
+Run Time = 22.00 seconds
+
+```{r}
+Erigenia_filtered_noMD.recode.vcf <- read.vcfR("/Volumes/G-DRIVEUSB/ErigeniaPEdataandruns/ErigeniaC/erigeniaC_outfiles/filtered_noMD.recode.vcf")
+```
+```{r}
+library(vcfR)
+```
+```{r}
+Erigenia_filtered_noMD.recode.genind <- vcfR2genind(Erigenia_filtered_noMD.recode.vcf)
+```
+
+
+
+
+may also need to use hierfstat or similar to generate non-comparative Fst's per pop for reporting in a table.
 
 
 
