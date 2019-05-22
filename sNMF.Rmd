@@ -1,6 +1,8 @@
 ---
 title: "Erigenia sNMF"
 output: html_document
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
@@ -12,57 +14,93 @@ http://membres-timc.imag.fr/Olivier.Francois/tutoRstructure.pdf
 ##loading the data and finding clusters
 set working directory
 
+```{r}
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install("LEA")
+```
+```{r}
+library(LEA)
+library(radiator)
+```
+
+put .geno from ipyrad into github folder locally, explore K's, this may take a while.
 ```{r sNMF pops}
-erigenia_snmf = snmf("erigeniaC.geno", K = 1:15, ploidy = 2, entropy = T, CPU = 1, project = "new")
+erigenia_snmf = snmf("erigeniaC_noMD.geno", K = 1:8, CPU = 4, entropy = TRUE, project = "new", iterations = 1000, repetitions = 10)
+```
+project is saved into :
+ erigeniaC_noMD.snmfProject 
+To load the project, use:
+ project = load.snmfProject("erigeniaC_noMD.snmfProject")
+To remove the project, use:
+ remove.snmfProject("erigeniaC_noMD.snmfProject")
+
+```{r}
+project = load.snmfProject("erigeniaC_noMD.snmfProject")
+```
+
+```{r sNMF pops}
 plot(erigenia_snmf, col = "blue4", cex = 1.4, pch = 19)
 ```
-Change K, ploidy (if needed), and CPUs if desired
-took ~3 hours
-
-run with defaults for seed, error tolerance etc for first go through
-started with 1:15 (number of sites) - no leveling off, changed to 1:44
 
 
-```{r save sNMF}
-save(erigenia_snmf, file ="erigenia_snmf.RData")
-```
-above didn't work but shouldn't need with below command
-```{r}
- project = load.snmfProject("s_viburnum1.snmfProject")
-```
-
-
-```{r makinf structure like plot}
-best = which.min(cross.entropy(erigenia_snmf, K = 5))
-my.colors <- c("tomato", "lightblue",
-"olivedrab", "gold", "cyan")
-bp1 <- barchart(s_viburnum, K = 5, run = best,
+```{r making structure like plot}
+best2 = which.min(cross.entropy(erigenia_snmf, K = 2))
+my.colors <- c("tomato", "lightblue")
+barchart(erigenia_snmf, K = 2, run = best2,
 border = NA, space = 0,
 col = my.colors,
 xlab = "Individuals",
 ylab = "Ancestry proportions",
-main = "Ancestry matrix") 
-axis(1, at = 1:length(bp$order),
-labels = bp$order, las=1,
+main = "Ancestry matrix") ->bp1
+axis(1, at = 1:length(bp1$order),
+labels = bp1$order, las=1,
 cex.axis = .3)
 ```
-https://rdrr.io/bioc/LEA/man/barchart.html
-change K and add colors if needed
+```{r making structure like plot}
+best3 = which.min(cross.entropy(erigenia_snmf, K = 3))
+my.colors <- c("tomato", "lightblue", "gold")
+barchart(erigenia_snmf, K = 3, run = best3,
+border = NA, space = 0,
+col = my.colors,
+xlab = "Individuals",
+ylab = "Ancestry proportions",
+main = "Ancestry matrix") ->bp3
 
+axis(1, at = 1:length(bp3$order),
+labels = bp3$order, las=1,
+cex.axis = .3)
+```
+```{r making structure like plot}
+best5 = which.min(cross.entropy(erigenia_snmf, K = 5))
+my.colors <- c("tomato", "lightblue",
+"olivedrab", "gold", "cyan")
+barchart(erigenia_snmf, K = 5, run = best5,
+border = NA, space = 0,
+col = my.colors,
+xlab = "Individuals",
+ylab = "Ancestry proportions",
+main = "Ancestry matrix") ->bp5
+axis(1, at = 1:length(bp5$order),
+labels = bp5$order, las=1,
+cex.axis = .3)
+```
 
+not sure what this is, but may be good:
 ```{r p values}
 # Population differentiation tests
 p = snmf.pvalues(erigenia_snmf,
 entropy = TRUE,
 ploidy = 2,
-K = 5)
+K = 2)
 pvalues = p$pvalues
 par(mfrow = c(2,1))
 hist(pvalues, col = "orange")
 plot(-log10(pvalues), pch = 19, col = "blue", cex = .7)
 ```
 
-
+lfmm quasi gwas thing
 ```{r adjusted p}
 # compute adjusted p-values
 p = lfmm.pvalues(erigenia_snmf, K = 5)
@@ -72,3 +110,4 @@ par(mfrow = c(2,1))
 hist(pvalues, col = "lightblue")
 plot(-log10(pvalues), pch = 19, col = "blue", cex = .7)
 ```
+

@@ -1,0 +1,126 @@
+---
+title: "Erigenia_DAPC"
+author: "AJM & CLM"
+date: "5/22/2019"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+filter new vcf w/o MD from ipyrad:
+```{bash}
+(base) biol327-mac:erigeniaC_noMD_outfiles PostDoc$ vcftools --vcf erigeniaC_noMD.vcf --recode --recode-INFO-all --min-alleles 2 --max-alleles 2 --max-missing 0.75 --out filtered
+```
+VCFtools - 0.1.16
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--vcf erigeniaC_noMD.vcf
+	--recode-INFO-all
+	--max-alleles 2
+	--min-alleles 2
+	--max-missing 0.75
+	--out filtered
+	--recode
+
+After filtering, kept 120 out of 120 Individuals
+Outputting VCF file...
+After filtering, kept 22525 out of a possible 436075 Sites
+Run Time = 20.00 seconds
+
+```{r}
+library("adegenet")
+if (!require("devtools")) install.packages("devtools")
+devtools::install_github("tidyverse/dplyr", force=TRUE)
+library("dplyr")
+library("readr")
+library("hierfstat")
+```
+
+
+```{r install package radiator}
+#this gave us some issues
+if (!require("devtools")) install.packages("devtools")
+devtools::install_github("thierrygosselin/radiator", force=TRUE)
+library("radiator")
+```
+```{r}
+library("radiator")
+```
+```{r making sure the data is recognized}
+radiator::detect_genomic_format(data="erigeniaC.noMD.filtered.recode.vcf")
+```
+This is how you should read in a vcf (not with vcfR)
+```{r reading in vcf}
+NewErigeniaCnoMD.vcf <- read_vcf("erigeniaC.noMD.filtered.recode.vcf")
+```
+
+convert vcf file to a genind object and a hierfstat object. Keeps markers common in all populations. hierfstat file made = something like radiator_data_20190508@1444.dat
+genind also made with a logical name.
+
+-Eventually we had to remove @ and changed to a so R would run code. If redoing these analyses try changing @ to a.
+
+
+```{r read in strata file}
+Erigenia.strata_noMD<-read.table("Erigenia.strata_noMD",sep="\t",header=TRUE)
+```
+```{r converting with radiator}
+new.rad.filt <- radiator::genomic_converter("/Volumes/Thunderbolt/Users/PostDoc/Github/Erigenia-Analyses/erigeniaC.noMD.filtered.recode.vcf",
+                       strata=Erigenia.strata_noMD,
+                       output = c("genlight","hierfstat"),
+                       parallel.core = 1, verbose=TRUE)
+```
+import genlight and radiator files from radiator output
+```{r }
+new_radiator_genlight_noMD <- read_rds("/Volumes/Thunderbolt/Users/PostDoc/Github/Erigenia-Analyses/296_radiator_genomic_converter_20190522a1616/radiator_genlight_20190522a1618.RData")
+```
+```{r}
+new_radiator_hf_noMD <- read.fstat("/Volumes/Thunderbolt/Users/PostDoc/Github/Erigenia-Analyses/296_radiator_genomic_converter_20190522a1616/radiator_data_20190522a1616.dat", na.s = c("0","00","000","0000","00000","000000","NA"))
+```
+
+assign pops to pop slot in genlight
+```{r}
+pop(new_radiator_genlight_noMD)<-Erigenia.strata_noMD$LOCATION
+```
+
+make a dapc in adegenet, 3 pca's, 2 axes (may take some time)
+```{r}
+Erigenia.dapc <- dapc(new_radiator_genlight_noMD, n.pca=3, n.da=2)
+```
+```{r}
+scatter.dapc(Erigenia.dapc) 
+```
+```{r}
+dapc.results <- as.data.frame(Erigenia.dapc$posterior)
+dapc.results$pop <- pop(new_radiator_genlight_noMD)
+dapc.results$indNames <- row.names(dapc.results)
+```
+
+```{r}
+dapc.results <- melt(dapc.results)
+colnames(dapc.results) <- c("Original_Pop","Sample","Assigned_Pop","Posterior_membership_probability")
+```
+
+```{r}
+p <- ggplot(dapc.results, aes(x=Sample, y=Posterior_membership_probability, fill=Assigned_Pop))
+p <- p + geom_bar(stat='identity')
+p <- p + scale_fill_manual(values = colors)
+#add colors here
+p <- p + facet_grid(~Original_Pop, scales = "free")
+p <- p + ylab("Posterior membership probability")
+p <- p + theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 8))
+p <- p + theme(axis.text.y = element_text(angle = 90, hjust = 1, size = 8))
+p
+```
+
+
+
+```{r}
+my_k <- 2:3
+```
+
+

@@ -149,7 +149,7 @@ rad.filt <- radiator::genomic_converter("Erigenia_filtered.recode.vcf",
                        parallel.core = 1, verbose=TRUE)
                         
 ```
-this functoin has replaced vcf2...
+this function has replaced vcf2...
 
 read in unlinked vcf file made via vcftools, prepare to convert/filter using radiator
 ```{r read in unlinked vcf}
