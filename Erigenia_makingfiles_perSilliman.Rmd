@@ -11,7 +11,13 @@ editor_options:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-filerting of VCF file from ipyrad: sample coverage of 75% (filter out SNP's missing in >25% of samples), only biallelic SNP's, needs to be done in terminal. Install vcftools via homebrew.
+This code follows a [tutorial on github by K. Silliman](https://github.com/ksil91/Ostrea_PopStructure/tree/master/Making_Files).
+
+This is from [Silliman's paper](https://onlinelibrary.wiley.com/doi/full/10.1111/eva.12766).
+
+
+#Preparing the data for R
+First we filtered the VCF file from ipyrad: sample coverage of 75% (filter out SNP's missing in >25% of samples), only biallelic SNP's, needs to be done in terminal. Install vcftools via homebrew.
 
 ```{bash}
 vcftools --vcf .../erigeniaC_outfiles/erigeniaC.vcf --recode --recode-INFO-all --min-alleles 2 --max-alleles 2 --max-missing 0.75 --out filtered
@@ -76,7 +82,9 @@ OUT_strata.close()
 OUT_pop.close()
 ```
 
-from Ostrea_PopStructure doc, skip "Filtering loci by departures from HWE" as well as filtering for minor allele freqs, etc.
+The above code makes the strata file that can be used to assign the data population strata. We did not use this code and instead edited/made the file by hand. 
+
+From Ostrea_PopStructure doc, skip "Filtering loci by departures from HWE" as well as filtering for minor allele freqs, etc.
 and now, 
 Subset 1 SNP/GBS locus:
 
@@ -94,7 +102,9 @@ we skipped "Making outlier-only & neutral-only .vcf files" section.
 
 in "Making files for other programs" we will turn filtered .vcf files into other appropriate formats (genind, hierfstat, and maybe geno). 3 parts, we are following along with the section "combined dataset".
 
-```{r}
+
+#Moving into R
+```{r library}
 library("adegenet")
 library("radiator")
 if (!require("devtools")) install.packages("devtools")
@@ -103,45 +113,51 @@ library("dplyr")
 
 ```
 
-```{r}
+```{r read in vdf with vcfR}
 Erigenia_filtered.recode.vcf <- read.vcfR("Erigenia_filtered.recode.vcf")
 ```
-```{r}
+```{r read in strata file}
 Erigenia.strata<-read.table("Erigenia.strata",sep="\t",header=TRUE)
 ```
 
-```{r}
+```{r install package radiator}
+#this gave us some issues
 if (!require("devtools")) install.packages("devtools")
 devtools::install_github("thierrygosselin/radiator", force=TRUE)
 library("radiator")
 ```
-```{r}
+```{r making sure the data is recognized}
 radiator::detect_genomic_format(data="Erigenia_filtered.recode.vcf")
 ```
 read in vcf file made via vcftools above, prepare to filter using radiator
-```{r}
+
+This is how you should read in a vcf (not with vcfR)
+```{r reading in vcf}
 Erigenia_filtered.recode.vcf <- read_vcf("Erigenia_filtered.recode.vcf")
 ```
 
 Use radiator (a genomic converter) to convert vcf file to a genind object and a hierfstat object. Keeps markers common in all populations. hierfstat file made = radiator_data_20190508@1444.dat
 genind also made with a logical name.
+
+-Eventually we had to remove @ and changed to a so R would run code. If redoing these analyses try changing @ to a.
+
 #useful links for radiator: https://rdrr.io/github/thierrygosselin/radiator/man/read_strata.html, https://rdrr.io/github/thierrygosselin/radiator/man/genomic_converter.html
-```{r}
+```{r converting with radiator}
 rad.filt <- radiator::genomic_converter("Erigenia_filtered.recode.vcf",
                        strata=Erigenia.strata,
                        output = c("genind","hierfstat"),
                        parallel.core = 1, verbose=TRUE)
                         
 ```
-
+this functoin has replaced vcf2...
 
 read in unlinked vcf file made via vcftools, prepare to convert/filter using radiator
-```{r}
+```{r read in unlinked vcf}
 ErigeniaCU.vcf <- read_vcf("ErigeniaCU.vcf")
 ```
 
 Use radiator to convert unlinked vcf file to a genind object and a genlight object (for pca in glpca pkg) Keeps markers common in all populations. 
-```{r}
+```{r convert unlinked}
 rad.filt.u <- radiator::genomic_converter("ErigeniaCU.vcf",
                        strata=Erigenia.strata,
                        output = c("genind", "genlight"),
@@ -149,21 +165,26 @@ rad.filt.u <- radiator::genomic_converter("ErigeniaCU.vcf",
                         
 ```
 Make input for pcadapt: a table with the allele counts per individual. Saves the table stored in a genind object.
-```{r}
+
+```{r reading in the genind}
 library("readr")
 radiator_genind_u <- read_rds("/Volumes/Thunderbolt/Users/PostDoc/Github/Erigenia-Analyses/126_radiator_genomic_converter_20190508@1524/radiator_genind_u.RData")
 ```
-```{r}
+```{r writinf a genind table}
 Erigenia_u_table <- write.table(radiator_genind_u,sep = "\t",row.names = T,col.names = T,quote = F )
 ```
 
 
-#Now to remove MD individuals for downstream analysis
-#useful links for radiator: https://rdrr.io/github/thierrygosselin/radiator/man/read_strata.html, https://rdrr.io/github/thierrygosselin/radiator/man/genomic_converter.html
+#Removing MD individuals for downstream analysis
+useful links for radiator: https://rdrr.io/github/thierrygosselin/radiator/man/read_strata.html, https://rdrr.io/github/thierrygosselin/radiator/man/genomic_converter.html
 Use radiator (a genomic converter) to convert vcf file to a genind object and a hierfstat object. Keeps markers common in all populations. hierfstat file looks like = radiator_data_20190508@1444.dat
 genind also made, with a logical name.
 
-```{r}
+
+-----
+Not sure if we need this:
+
+```{r library again}
 library("adegenet")
 library("radiator")
 if (!require("devtools")) install.packages("devtools")
@@ -172,21 +193,26 @@ library("dplyr")
 ```
 
 read in vcf file made via vcftools, prepare to convert/filter using radiator (use unlinked vcf for pca)
-```{r}
+```{r read in vcf}
 erigeniaC.vcf <- read_vcf("erigeniaC.vcf")
 ```
 use read_strata and pop.select in radiator to eliminate MD population (this works, but eliminated all other data columns except individual and pop, use code below this to keep other columns)
-```{r}
+```{r readin in strata}
 read_strata(Erigenia.strata, pop.select = c("BTP","CCP","PB","RCSPWR","RSSP","SH", "SRCNA", "YF"))
 ```
+-----
+
+
+
 manually edited old strata file to delete MD individuals, this allows retention of other data columns
-```{r}
+```{r read in no MD strata}
 Erigenia.strata.noMD<-read.table("/Volumes/Thunderbolt/Users/PostDoc/Github/Erigenia-Analyses/Erigenia.strata_noMD", sep="\t", header=TRUE)
 ```
 
 
+
 Use radiator to convert unlinked vcf file to a genind object and a genlight object (for pca in glpca pkg) Keeps markers common in all populations. Takes a long time! W/o MD, >2x more SNPs.
-```{r}
+```{r convert no MD}
 rad.filt.noMD <- radiator::genomic_converter("erigeniaC.vcf",
                        strata=Erigenia.strata.noMD,
                        output = c("genlight", "hierfstat"),
