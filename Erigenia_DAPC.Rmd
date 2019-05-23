@@ -101,9 +101,13 @@ make a dapc in adegenet, 3 pca's, 2 axes (may take some time)
 Erigenia.dapc <- dapc(new_radiator_genlight_noMD, n.pca=3, n.da=2)
 ```
 ```{r}
-scatter.dapc(Erigenia.dapc) 
+myCol <- c("darkblue","purple","green","orange","red","blue","black","yellow")
+scatter(Erigenia.dapc, posi.da="bottomright", bg="white",
+pch=17:22, cstar=0, col=myCol, scree.pca=TRUE,
+posi.pca="bottomleft")
+
 ```
-Can add more arguments  to above code and change other features
+Basic=scatter.dapc(Erigenia.dapc); Can add more arguments  to above code and change other features
 
 
 ##ggplot
@@ -119,10 +123,19 @@ colnames(dapc.results) <- c("Original_Pop","Sample","Assigned_Pop","Posterior_me
 ```
 
 ```{r}
+colors <- c("tomato", "black", "peachpuff4", "cadetblue1", "yellowgreen", "darkturquoise", 
+            "orange", "purple")
+
+```
+
+```{r DAPC structure plot}
+compoplot(Erigenia.dapc,col = colors, posi = 'bottom')
+```
+
+```{r}
 p <- ggplot(dapc.results, aes(x=Sample, y=Posterior_membership_probability, fill=Assigned_Pop))
 p <- p + geom_bar(stat='identity')
 p <- p + scale_fill_manual(values = colors)
-#add colors here
 p <- p + facet_grid(~Original_Pop, scales = "free")
 p <- p + ylab("Posterior membership probability")
 p <- p + theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 8))
@@ -130,9 +143,11 @@ p <- p + theme(axis.text.y = element_text(angle = 90, hjust = 1, size = 8))
 p
 ```
 
-```{r DAPC structure plot}
-compoplot(s_vib.dapc,col = colors, posi = 'bottom')
+```{r}
+scatter(Erigenia.dapc, scree.da=FALSE, bg="white", pch=20, cell=0, cstar=0, col=colors, solid=.4,
+cex=3,clab=0, leg=TRUE, txt.leg=paste("Cluster",1:8))
 ```
+
 
 
 #STRUCTURE-like plot
