@@ -74,6 +74,7 @@ new.rad.filt <- radiator::genomic_converter("/Volumes/Thunderbolt/Users/PostDoc/
                        output = c("genlight","hierfstat"),
                        parallel.core = 1, verbose=TRUE)
 ```
+
 import genlight and radiator files from radiator output
 ```{r }
 new_radiator_genlight_noMD <- read_rds("/Volumes/Thunderbolt/Users/PostDoc/Github/Erigenia-Analyses/296_radiator_genomic_converter_20190522a1616/radiator_genlight_20190522a1618.RData")
@@ -87,6 +88,14 @@ assign pops to pop slot in genlight
 pop(new_radiator_genlight_noMD)<-Erigenia.strata_noMD$LOCATION
 ```
 
+
+#Doing DAPC
+
+Helpful links: 
+https://grunwaldlab.github.io/Population_Genetics_in_R/DAPC.html
+http://adegenet.r-forge.r-project.org/files/tutorial-dapc.pdf
+
+
 make a dapc in adegenet, 3 pca's, 2 axes (may take some time)
 ```{r}
 Erigenia.dapc <- dapc(new_radiator_genlight_noMD, n.pca=3, n.da=2)
@@ -94,6 +103,10 @@ Erigenia.dapc <- dapc(new_radiator_genlight_noMD, n.pca=3, n.da=2)
 ```{r}
 scatter.dapc(Erigenia.dapc) 
 ```
+Can add more arguments  to above code and change other features
+
+
+##ggplot
 ```{r}
 dapc.results <- as.data.frame(Erigenia.dapc$posterior)
 dapc.results$pop <- pop(new_radiator_genlight_noMD)
@@ -117,10 +130,37 @@ p <- p + theme(axis.text.y = element_text(angle = 90, hjust = 1, size = 8))
 p
 ```
 
-
-
-```{r}
-my_k <- 2:3
+```{r DAPC structure plot}
+compoplot(s_vib.dapc,col = colors, posi = 'bottom')
 ```
 
 
+#STRUCTURE-like plot
+```{r make DAPC results}
+dapc.results <- as.data.frame(s_vib.dapc$posterior)
+dapc.results$pop <- pop(s_vib_gen)
+dapc.results$indNames <- rownames(dapc.results)
+```
+
+##ggplot
+```{r getting dapc ready for ggplot}
+dapc.results <- melt(dapc.results)
+colnames(dapc.results) <- c("Original_Pop","Sample","Assigned_Pop","Posterior_membership_probability")
+```
+
+```{r DAPC ggplot}
+p <- ggplot(dapc.results, aes(x=Sample, y=Posterior_membership_probability, fill=Assigned_Pop))
+p <- p + geom_bar(stat='identity') 
+p <- p + scale_fill_manual(values = colors) 
+p <- p + facet_grid(~Original_Pop, scales = "free")
+p <- p + ylab("Posterior membership probability")
+p <- p + theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 8))
+p <- p + theme(axis.text.y = element_text(angle = 90, hjust = 1, size = 8))
+p
+```
+
+#finding clusters
+```{r DAPC clusters}
+#n.iter for number of interations, can also set seed
+#erigenia.clusts <- find.clusters(s_vib_gen, n.iter=100, max.n.clust=8)
+```
