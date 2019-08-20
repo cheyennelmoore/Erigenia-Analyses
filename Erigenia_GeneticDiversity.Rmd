@@ -1,12 +1,13 @@
 ---
-title: "Erigenia_GeneticDiversity"
+title: "Pop gen stats and PCAs"
 author: "AJM & CLM"
 date: "5/15/2019"
-output: html_document
+output: github_document
 editor_options: 
   chunk_output_type: console
 ---
-
+ Rmd #3
+ 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
@@ -29,6 +30,8 @@ radiator_genlight_a_noMD <- read_rds("/Volumes/Thunderbolt/Users/PostDoc/Github/
 radiator_hf_a_noMD <- read.fstat("/Volumes/Thunderbolt/Users/PostDoc/Github/Erigenia-Analyses/a166_radiator_genomic_converter_20190513a1509/radiator_data_20190513a1509.dat", na.s = c("0","00","000","0000","00000","000000","NA"))
 ```
 
+
+basicstat is a hierfstat function to tell you Fis etc
 ```{r}
 basicstat <- basic.stats(radiator_hf_a_noMD, diploid=TRUE, digits=3)
 ```
@@ -76,6 +79,7 @@ save(popgen_stats_noMD, file="popgen_stats_noMD")
 
 
 PCA with hierfstat
+This figure will not be pub quality but can be a good comparison for other, better PCAs
 
 ```{r}
 pca<- indpca(radiator_hf_a_noMD, ind.labels=radiator_hf_a_noMD[,1])
@@ -84,8 +88,6 @@ pca<- indpca(radiator_hf_a_noMD, ind.labels=radiator_hf_a_noMD[,1])
 plot(pca, col=radiator_hf_a_noMD[,1], cex=1.0)
 ```
 hard to see but PB, SH, and YF are the upper three pops. Crazy separation!
-
-PCA with something else.. glPCA id what I've used.. can send code to modify
 
 
 

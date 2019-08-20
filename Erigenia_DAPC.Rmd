@@ -1,12 +1,15 @@
 ---
-title: "Erigenia_DAPC"
+title: "DAPC"
 author: "AJM & CLM"
 date: "5/22/2019"
 output: html_document
 editor_options: 
   chunk_output_type: console
 ---
+Rmd #4 
 
+
+Recap of some other code:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
@@ -89,6 +92,7 @@ assign pops to pop slot in genlight
 pop(new_radiator_genlight_noMD)<-Erigenia.strata_noMD$LOCATION
 ```
 
+end of recap, now...
 
 #Doing DAPC
 
@@ -112,19 +116,12 @@ dev.off()
 
 
 
-
-
-
-Basic=scatter.dapc(Erigenia.dapc); Can add more arguments  to above code and change other features
+Basic=scatter.dapc(Erigenia.dapc); Can add more arguments  to above code and change other features (see above)
 
 ```{r}
 scatter(Erigenia.dapc, scree.da=FALSE, bg="white", pch=20, cell=0, cstar=0, col=colors, solid=.4,
 cex=3,clab=0, leg=TRUE, txt.leg=paste("Cluster",1:8))
 ```
-
-
-
-
 
 
 
@@ -184,7 +181,7 @@ p <- p + theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 8))
 p <- p + theme(axis.text.y = element_text(angle = 90, hjust = 1, size = 8))
 p
 ```
-This isn't working like we thought it was, it's mixing up pops
+This code doesn't work like we thought it would. It's mixing up pops, but could be good to come bakc to at some point. 
 
 
 
