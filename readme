@@ -1,1 +1,7 @@
-This repository will contain analyses of SNP data for Erigenia bulbosa in PA. 
+This repository contains analyses of SNP data for Erigenia bulbosa in PA. 
+
+Erigenia_makingfiles_perSilliman- uses vcf tools to filter ipyrad output and the R package radiator to create files for downstream use
+Erigenia_Fst_perSilliman- calculates pairwise Fst and perform Bartlett test
+Erigenia_GeneticDiversity- calcuates H stats and Fis as well as makes PCAs
+Erigenia_DAPC.Rmd- 
+Erigenia_sNMF.Rmd
