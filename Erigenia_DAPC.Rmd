@@ -66,6 +66,7 @@ genind also made with a logical name.
 
 
 ```{r read in strata file}
+setwd("~/github/Erigenia-Analyses")
 Erigenia.strata_noMD<-read.table("Erigenia.strata_noMD",sep="\t",header=TRUE)
 ```
 ```{r converting with radiator}
@@ -100,21 +101,45 @@ make a dapc in adegenet, 3 pca's, 2 axes (may take some time)
 ```{r}
 Erigenia.dapc <- dapc(new_radiator_genlight_noMD, n.pca=3, n.da=2)
 ```
-```{r}
-myCol <- c("darkblue","purple","green","orange","red","blue","black","yellow")
+```{r save fig}
+myCol <- c("brown","purple","green","orange","red","blue","black","yellow")
+pdf("DAPC.pdf", width = 4, height = 4)
 scatter(Erigenia.dapc, posi.da="bottomright", bg="white",
 pch=17:22, cstar=0, col=myCol, scree.pca=TRUE,
 posi.pca="bottomleft")
-
+dev.off()
 ```
+
+
+
+
+
+
 Basic=scatter.dapc(Erigenia.dapc); Can add more arguments  to above code and change other features
 
+```{r}
+scatter(Erigenia.dapc, scree.da=FALSE, bg="white", pch=20, cell=0, cstar=0, col=colors, solid=.4,
+cex=3,clab=0, leg=TRUE, txt.leg=paste("Cluster",1:8))
+```
 
+
+
+
+
+
+
+#STRUCTURE-like plot
+```{r DAPC structure plot}
+compoplot(Erigenia.dapc,col = colors, posi = 'bottom')
+```
 ##ggplot
+
 ```{r}
 dapc.results <- as.data.frame(Erigenia.dapc$posterior)
 dapc.results$pop <- pop(new_radiator_genlight_noMD)
 dapc.results$indNames <- row.names(dapc.results)
+#dapc.results$Region <-Erigenia.strata_noMD$REGION
+#region optional
 ```
 
 ```{r}
@@ -125,14 +150,10 @@ colnames(dapc.results) <- c("Original_Pop","Sample","Assigned_Pop","Posterior_me
 ```{r}
 colors <- c("tomato", "black", "peachpuff4", "cadetblue1", "yellowgreen", "darkturquoise", 
             "orange", "purple")
-
+BmyCol <- c("brown","purple","green","orange","red","blue","black","yellow")
 ```
 
-```{r DAPC structure plot}
-compoplot(Erigenia.dapc,col = colors, posi = 'bottom')
-```
-
-```{r}
+```{r works}
 p <- ggplot(dapc.results, aes(x=Sample, y=Posterior_membership_probability, fill=Assigned_Pop))
 p <- p + geom_bar(stat='identity')
 p <- p + scale_fill_manual(values = colors)
@@ -143,38 +164,33 @@ p <- p + theme(axis.text.y = element_text(angle = 90, hjust = 1, size = 8))
 p
 ```
 
-```{r}
-scatter(Erigenia.dapc, scree.da=FALSE, bg="white", pch=20, cell=0, cstar=0, col=colors, solid=.4,
-cex=3,clab=0, leg=TRUE, txt.leg=paste("Cluster",1:8))
-```
-
-
-
-#STRUCTURE-like plot
-```{r make DAPC results}
-dapc.results <- as.data.frame(s_vib.dapc$posterior)
-dapc.results$pop <- pop(s_vib_gen)
-dapc.results$indNames <- rownames(dapc.results)
-```
-
-##ggplot
-```{r getting dapc ready for ggplot}
-dapc.results <- melt(dapc.results)
-colnames(dapc.results) <- c("Original_Pop","Sample","Assigned_Pop","Posterior_membership_probability")
-```
-
-```{r DAPC ggplot}
-p <- ggplot(dapc.results, aes(x=Sample, y=Posterior_membership_probability, fill=Assigned_Pop))
-p <- p + geom_bar(stat='identity') 
-p <- p + scale_fill_manual(values = colors) 
-p <- p + facet_grid(~Original_Pop, scales = "free")
+```{r doesnt work}
+p <- ggplot(dapc.results, aes(x=indNames, y=Posterior_membership_probability, fill=Assigned_Pop))
+p <- p + geom_bar(stat='identity')
+p <- p + scale_fill_manual(values = colors)
+p <- p + facet_grid(~pop, scales = "free")
 p <- p + ylab("Posterior membership probability")
 p <- p + theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 8))
 p <- p + theme(axis.text.y = element_text(angle = 90, hjust = 1, size = 8))
 p
 ```
+```{r also doesn't work}
+p <- ggplot(dapc.results, aes(x=Sample, y=Posterior_membership_probability, fill=Assigned_Pop))
+p <- p + geom_bar(stat='identity')
+p <- p + scale_fill_manual(values = colors)
+p <- p + facet_grid(~Region, scales = "free")
+p <- p + ylab("Posterior membership probability")
+p <- p + theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 8))
+p <- p + theme(axis.text.y = element_text(angle = 90, hjust = 1, size = 8))
+p
+```
+This isn't working like we thought it was, it's mixing up pops
 
-#finding clusters
+
+
+
+
+#finding clusters if we want.. 
 ```{r DAPC clusters}
 #n.iter for number of interations, can also set seed
 #erigenia.clusts <- find.clusters(s_vib_gen, n.iter=100, max.n.clust=8)

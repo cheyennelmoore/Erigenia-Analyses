@@ -21,22 +21,22 @@ library("cowplot") #For plotting manuscript figs
 library(readr)
 ```
 ```{r}
-setwd("~/github/Erigenia-Analyses/118_radiator_genomic_converter_20190508@1444")
+setwd("~/github/Erigenia-Analyses/a118_radiator_genomic_converter_20190508a1444")
 ```
 
 begin at section named Combined, load previously created Adegenet genind object and hierfstat object, made from radiator from vcf
 
-```{r}
-radiator_genind_a <- read_rds("/Volumes/Thunderbolt/Users/PostDoc/Github/Erigenia-Analyses/118_radiator_genomic_converter_20190508@1444/radiator_genind_20190508@1445.RData")
+```{r read in genind}
+radiator_genind_a <- read_rds("/Volumes/Thunderbolt/Users/PostDoc/Github/Erigenia-Analyses/a118_radiator_genomic_converter_20190508a1444/radiator_genind_20190508@1445.RData")
 ```
-```{r}
+```{r read in heirfstat}
 radiator_hf_a <- read.fstat("/Volumes/Thunderbolt/Users/PostDoc/Github/Erigenia-Analyses/a118_radiator_genomic_converter_20190508a1444/radiator_data_20190508a1444.dat", na.s = c("0","00","000","0000","00000","000000","NA"))
 ```
-```{r}
+```{r population order for later}
 pop_order <- c("BTP","CCP","MD","PB","RCSPWR","RSSP","SH", "SRCNA", "YF")
 ```
-This takes a long time (~10 minutes)
-```{r}
+This takes a long time (~30 minutes)
+```{r calculate fst}
 fst.mat<-genet.dist(radiator_hf_a, method = "WC84")
 ```
 ```{r}
@@ -45,7 +45,7 @@ colnames(gindF.fst.mat.tri)<- pop_order
 rownames(gindF.fst.mat.tri)<- pop_order
 write.table(gindF.fst.mat.tri, file="ErigeniaFstWC84.pwfst", row.names=T,col.names=T)
 ```
-
+This is so we can arrange these east to west
 ```{r}
 newmelted<-read.csv("/Volumes/Thunderbolt/Users/PostDoc/Desktop/newmelted.csv", sep=",", header=TRUE)
 ```
@@ -56,8 +56,10 @@ melted <- melt(newmelted, na.rm = TRUE)
 ```{r}
 summary(melted$value)
 ```
+
+FIGURE FOR PUB
 plotting using ggplot2
-```{r}
+```{r figure for fst}
 combined <- ggplot(data = melted, aes(Var2, Var1, fill = value))+ geom_tile(color = "white")+ 
   scale_fill_gradient(low = "white", high = "red", name="FST")  +
   ggtitle(expression(atop("Pairwise FST, WC (1984), Combined", atop(italic("N = 124, L = 9,243"), ""))))+
@@ -66,6 +68,21 @@ combined <- ggplot(data = melted, aes(Var2, Var1, fill = value))+ geom_tile(colo
   coord_fixed()
 combined
 ```
+```{r}
+library(cowplot)
+```
+save fig
+
+```{r saving tiff}
+save_plot("Erigenia_Fst_figure.pdf", plot = combined, ncol = 1, nrow = 1, base_height = 4, base_aspect_ratio = 1.1, base_width = NULL, cols = NULL,rows = NULL, dpi = 600)
+```
+
+
+
+
+
+
+#did not rerun this code, not super informative figures, but a good check of data
 relabel individuals by their geographic region
 ```{r}
 hf_a_reg<- radiator_hf_a
@@ -99,7 +116,7 @@ ggplot(data = melted.reg, aes(Var2, Var1, fill = value))+ geom_tile(color = "whi
 #need to remove MD. prob can't repeat above with 2 regions. 
 #MD removed! see end of Erigenia_Python_perSilliman.Rmd, made hierfstat & genlight (genind impossible.)
 ```{r}
-setwd("~/github/Erigenia-Analyses/166_radiator_genomic_converter_20190513@1509")
+setwd("~/github/Erigenia-Analyses/a166_radiator_genomic_converter_20190513a1509")
 ```
 ```{r}
 radiator_genlight_a_noMD <- read_rds("/Volumes/Thunderbolt/Users/PostDoc/Github/Erigenia-Analyses/a166_radiator_genomic_converter_20190513a1509/radiator_genlight_20190513a1614.RData")
@@ -114,6 +131,12 @@ This takes a long time (~24 hrs for all snp's in Erigenia)
 ```{r}
 noMD.fst.mat<-genet.dist(radiator_hf_a_noMD, method = "WC84")
 ```
+```{r save the thing cause it takes forever to make}
+save(noMD.fst.mat, file="noMD.fst.mat.RData")
+```
+
+#height is in inches so abour 9 cm
+
 ```{r}
 noMD.gindF.fst.mat.tri <- as.matrix(noMD.fst.mat)
 colnames(noMD.gindF.fst.mat.tri)<- pop_order_noMD
@@ -151,9 +174,18 @@ combined_noMD <- ggplot(data = newmelted_noMD, aes(Var2, Var1, fill = value))+ g
   coord_fixed()
 combined_noMD
 ```
+save fig
+```{r saving no MD tiff}
+save_plot("Erigenia_Fst_figure_noMD.pdf", plot = combined_noMD, ncol = 1, nrow = 1, base_height = 4, base_aspect_ratio = 1.1, base_width = NULL, cols = NULL,rows = NULL, dpi = 600)
+```
+
+
+
+
 
 #########################calculating regional fst's for reporting only (no graphs)
 relabel individuals by their geographic region
+#No figures for this
 ```{r}
 hf_noMD_reg <- radiator_hf_a_noMD
 regions<- c("West", "West", "East", "West", "West", "East", "West", "East")
@@ -207,7 +239,8 @@ After filtering, kept 22624 out of a possible 439647 Sites
 Run Time = 22.00 seconds
 
 ```{r}
-Erigenia_filtered_noMD.recode.vcf <- read.vcfR("/Volumes/G-DRIVEUSB/ErigeniaPEdataandruns/ErigeniaC/erigeniaC_outfiles/filtered_noMD.recode.vcf")
+Erigenia_filtered_noMD.recode.vcf <- read.vcfR("/Volumes/G-DRIVEUSB/Erigenia/ErigeniaPEdataandruns/ErigeniaC/erigeniaC_outfiles/filtered_noMD.recode.vcf")
+                                               
 ```
 ```{r}
 library(vcfR)
@@ -232,15 +265,38 @@ library("pegas")
 ErigeniaHet <- summary(Erigenia_filtered_noMD.recode.genind)
 ErigeniaHet
 ```
+
+```{r saving het}
+save(ErigeniaHet,file="ErigeniaHet.Rdata")
+```
+
 ```{r}
 names(ErigeniaHet)
 ```
+
+SAVING
+save fig
+
 ```{r}
+tiff(filename="Erigenia_Hob_plot.tiff", width = 4, height = 4, units = 'in', res = 300)
 plot(ErigeniaHet$Hobs, xlab="Locus number", ylab="Observed heterozygosity", main="Observed heterozygosity per locus")
+dev.off()
 ```
+
+
 ```{r}
+tiff(filename="Erigenia_Ho_He_plot.tiff", width = 4, height = 4, units = 'in', res = 300)
 plot(ErigeniaHet$Hobs, ErigeniaHet$Hexp, xlab="Observed heterozygosity", ylab="Expected heterozygosity", main="He as a function of Ho, per locus")
+dev.off()
 ```
+
+
+
+
+
+
+
+
 ```{r}
 bartlett.test(list(ErigeniaHet$Hexp, ErigeniaHet$Hobs))
 ```
