@@ -4,7 +4,7 @@ author: "AJM & CLM"
 date: "5/22/2019"
 output: html_document
 editor_options: 
-  chunk_output_type: console
+  chunk_output_type: inline
 ---
 
 ```{r setup, include=FALSE}
@@ -81,12 +81,16 @@ import genlight and radiator files from radiator output
 new_radiator_genlight_noMD <- read_rds("/Volumes/Thunderbolt/Users/PostDoc/Github/Erigenia-Analyses/296_radiator_genomic_converter_20190522a1616/radiator_genlight_20190522a1618.RData")
 ```
 ```{r}
+save(new_radiator_genlight_noMD, file="new_radiator_genlight_noMD.RData")
+```
+
+```{r}
 new_radiator_hf_noMD <- read.fstat("/Volumes/Thunderbolt/Users/PostDoc/Github/Erigenia-Analyses/296_radiator_genomic_converter_20190522a1616/radiator_data_20190522a1616.dat", na.s = c("0","00","000","0000","00000","000000","NA"))
 ```
 
 assign pops to pop slot in genlight
 ```{r}
-pop(new_radiator_genlight_noMD)<-Erigenia.strata_noMD$LOCATION
+pop<-Erigenia.strata_noMD$LOCATION
 ```
 
 
@@ -95,25 +99,56 @@ pop(new_radiator_genlight_noMD)<-Erigenia.strata_noMD$LOCATION
 Helpful links: 
 https://grunwaldlab.github.io/Population_Genetics_in_R/DAPC.html
 http://adegenet.r-forge.r-project.org/files/tutorial-dapc.pdf
+ -Code to explore DAPC objects and assignments
+```{r}
+grp<-find.clusters(new_radiator_genlight_noMD)
+```
+```{r}
+grp
+```
+```{r}
+dapc1<- dapc(new_radiator_genlight_noMD, grp$grp)
+```
+```{r}
+#dapc1
+dapc$assign
+```
+```{r}
+dapc1$posterior
+```
+```{r}
+Erigenia.dapc$posterior
+```
+```{r}
+loadingplot(Erigenia.dapc$var.contr)
+```
+```{r}
+summary(Erigenia.dapc)
+```
 
+```{r}
+assignplot(Erigenia.dapc)
+```
 
 make a dapc in adegenet, 3 pca's, 2 axes (may take some time)
 ```{r}
 Erigenia.dapc <- dapc(new_radiator_genlight_noMD, n.pca=3, n.da=2)
 ```
+-------------------
+
+
+
+
+
+MAKING FIGURES
 ```{r save fig}
 myCol <- c("brown","purple","green","orange","red","blue","black","yellow")
-pdf("DAPC.pdf", width = 4, height = 4)
+#pdf("DAPC.pdf", width = 4, height = 4)
 scatter(Erigenia.dapc, posi.da="bottomright", bg="white",
 pch=17:22, cstar=0, col=myCol, scree.pca=TRUE,
 posi.pca="bottomleft")
-dev.off()
+#dev.off()
 ```
-
-
-
-
-
 
 Basic=scatter.dapc(Erigenia.dapc); Can add more arguments  to above code and change other features
 
@@ -123,14 +158,136 @@ cex=3,clab=0, leg=TRUE, txt.leg=paste("Cluster",1:8))
 ```
 
 
+------------- Investigating number of PCs with alpha values etc
+http://adegenet.r-forge.r-project.org/files/tutorial-dapc.pdf pg 37
+
+```{r}
+x<-(radiator_hf_a_noMD)
+```
+swapped new_radiator_genlight_noMD out
+
+```{r}
+mat<- as.matrix(x)
+```
+You need to remove na from matrix not genlight (S4) b/c na.replace in adegenet is gone
+```{r}
+mat<- na.replace(mat, mean, na.rm=TRUE) 
+```
+OR
+```{r}
+mat <- as.matrix(x, missing="mean")
+```
+
+
+```{r}
+grp2<- pop(x)
+```
+```{r}
+grp2
+```
+
+
+```{r}
+xval <- xvalDapc(mat, grp2, n.pca.max = 120, n.da=NULL, training.set = 0.9,
+result = "groupMean", center = TRUE, scale = FALSE,
+n.pca = NULL, n.rep = 30, xval.plot = TRUE)
+```
+current error: Error in if (nf > rank) nf <- rank : missing value where TRUE/FALSE needed
+
+issue with duplicate row names... maybe because I'm using a genlight not genind... I could use our old genind since it may contain MD but that shouldn't change PCs much 
+
+try with not matirx
+```{r}
+xval<-xvalDapc(x2, grp2, n.pca.max = 300, n.da = NULL, training.set = 0.9, result = c("groupMean", "overall"), center = TRUE, scale = FALSE, n.pca=NULL, n.rep = 30, xval.plot = TRUE)
+
+```
+```{r}
+x2<- as.data.frame(radiator_hf_a_noMD, missing="mean")
+```
+```{r}
+x2 %>% tidyr::fill(everything(x2))
+```
+
+
+
+```{r read in genind}
+radiator_genind_a <- read_rds("/Volumes/Thunderbolt/Users/PostDoc/Github/Erigenia-Analyses/a118_radiator_genomic_converter_20190508a1444/radiator_genind_20190508@1445.RData")
+```
+
+
+
+```{r}
+adegenetServer(what = "DAPC")
+```
+new_radiator_genlight_noMD.RData
+
+-----
+# redoing dapc with alpha score consideration
+```{r}
+Erigenia.dapc2 <- dapc(new_radiator_genlight_noMD, n.pca=10, n.da=10)
+
+```
+```{r}
+temp <- a.score(Erigenia.dapc2)
+names(temp)
+temp.<- optim.a.score(Erigenia.dapc2)
+```
+```{r}
+temp$pop.score
+temp$mean
+```
+
+```{r}
+dapc3 <- dapc(new_radiator_genlight_noMD, n.da=100, n.pca=20)
+temp2 <- optim.a.score(dapc3)
+```
+```{r}
+dapc3 <- dapc(new_radiator_genlight_noMD, n.da=2, n.pca=15)
+temp3 <- optim.a.score(dapc3)
+```
+
+
+```{r}
+Erigenia.dapc_newPCs <- dapc(new_radiator_genlight_noMD, n.pca=5, n.da=2)
+
+```
+```{r}
+Erigenia.dapc_newPCs$posterior
+```
+
+```{r}
+loadingplot(Erigenia.dapc_newPCs$var.contr)
+```
+```{r}
+summary(Erigenia.dapc_newPCs)
+```
+
+```{r}
+scatter(Erigenia.dapc_newPCs, scree.da=FALSE, bg="white", pch=20, cell=0, cstar=0, col=colors, solid=.4,
+cex=3,clab=0, leg=TRUE, txt.leg=paste("Cluster",1:8))
+```
+
+```{r save fig}
+myCol <- c("burlywood4","darkviolet","green","orange","red","dodgerblue3","black","gold2")
+pdf("DAPC.pdf", width = 6, height = 4)
+scatter(Erigenia.dapc_newPCs, posi.da="bottomright", bg="white",
+pch=17:22, cstar=0, col=myCol, scree.pca=TRUE,
+posi.pca="topright")
+dev.off()
+```
+
+
+```{r}
+assignplot(Erigenia.dapc_newPCs)
+```
 
 
 
 
-
+#No luck with this... come back to? 
 #STRUCTURE-like plot
 ```{r DAPC structure plot}
-compoplot(Erigenia.dapc,col = colors, posi = 'bottom')
+compoplot(Erigenia.dapc_newPCs,col = myCol, posi = 'bottom')
 ```
 ##ggplot
 
