@@ -44,10 +44,11 @@ project = load.snmfProject("erigeniaC_noMD.snmfProject")
 plot(erigenia_snmf, col = "blue4", cex = 1.4, pch = 19)
 ```
 
-
+save fig
 ```{r making structure like plot}
 best2 = which.min(cross.entropy(erigenia_snmf, K = 2))
 my.colors <- c("tomato", "lightblue")
+pdf("snmf_plot_2pop.pdf", width = 6, height = 3.5)
 barchart(erigenia_snmf, K = 2, run = best2,
 border = NA, space = 0,
 col = my.colors,
@@ -57,21 +58,28 @@ main = "Ancestry matrix") ->bp1
 axis(1, at = 1:length(bp1$order),
 labels = bp1$order, las=1,
 cex.axis = .3)
+dev.off()
 ```
+
 ```{r making structure like plot}
 best3 = which.min(cross.entropy(erigenia_snmf, K = 3))
 my.colors <- c("tomato", "lightblue", "gold")
+tiff(filename="snmf_plot_3pop.tiff", width = 4, height = 4, units = 'in', res = 300)
 barchart(erigenia_snmf, K = 3, run = best3,
 border = NA, space = 0,
 col = my.colors,
 xlab = "Individuals",
 ylab = "Ancestry proportions",
 main = "Ancestry matrix") ->bp3
-
 axis(1, at = 1:length(bp3$order),
 labels = bp3$order, las=1,
 cex.axis = .3)
+dev.off()
 ```
+
+
+
+
 ```{r making structure like plot}
 best5 = which.min(cross.entropy(erigenia_snmf, K = 5))
 my.colors <- c("tomato", "lightblue",

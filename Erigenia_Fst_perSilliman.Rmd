@@ -1,11 +1,12 @@
 ---
-title: "Erigenia_Fst_perSilliman"
+title: "Fst and Bartlett Test"
 author: "AJM & CLM"
 date: "5/8/2019"
 output: github_document
 editor_options: 
   chunk_output_type: console
 ---
+Rmd #2
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -20,11 +21,11 @@ library(plyr)
 library("cowplot") #For plotting manuscript figs
 library(readr)
 ```
-```{r}
+```{r set directory to where radiator output is}
 setwd("~/github/Erigenia-Analyses/a118_radiator_genomic_converter_20190508a1444")
 ```
 
-begin at section named Combined, load previously created Adegenet genind object and hierfstat object, made from radiator from vcf
+begin at section named Combined in Silliman's Ostrea tutorial, load previously created adegenet genind object and hierfstat object, made from radiator from vcf
 
 ```{r read in genind}
 radiator_genind_a <- read_rds("/Volumes/Thunderbolt/Users/PostDoc/Github/Erigenia-Analyses/a118_radiator_genomic_converter_20190508a1444/radiator_genind_20190508@1445.RData")
@@ -35,6 +36,8 @@ radiator_hf_a <- read.fstat("/Volumes/Thunderbolt/Users/PostDoc/Github/Erigenia-
 ```{r population order for later}
 pop_order <- c("BTP","CCP","MD","PB","RCSPWR","RSSP","SH", "SRCNA", "YF")
 ```
+
+
 This takes a long time (~30 minutes)
 ```{r calculate fst}
 fst.mat<-genet.dist(radiator_hf_a, method = "WC84")
@@ -49,7 +52,6 @@ This is so we can arrange these east to west
 ```{r}
 newmelted<-read.csv("/Volumes/Thunderbolt/Users/PostDoc/Desktop/newmelted.csv", sep=",", header=TRUE)
 ```
-
 ```{r}
 melted <- melt(newmelted, na.rm = TRUE)
 ```
@@ -59,6 +61,9 @@ summary(melted$value)
 
 FIGURE FOR PUB
 plotting using ggplot2
+```{r}
+library(cowplot)
+```
 ```{r figure for fst}
 combined <- ggplot(data = melted, aes(Var2, Var1, fill = value))+ geom_tile(color = "white")+ 
   scale_fill_gradient(low = "white", high = "red", name="FST")  +
@@ -68,21 +73,12 @@ combined <- ggplot(data = melted, aes(Var2, Var1, fill = value))+ geom_tile(colo
   coord_fixed()
 combined
 ```
-```{r}
-library(cowplot)
-```
-save fig
 
 ```{r saving tiff}
 save_plot("Erigenia_Fst_figure.pdf", plot = combined, ncol = 1, nrow = 1, base_height = 4, base_aspect_ratio = 1.1, base_width = NULL, cols = NULL,rows = NULL, dpi = 600)
 ```
 
-
-
-
-
-
-#did not rerun this code, not super informative figures, but a good check of data
+#not super informative figures, but a good check of data
 relabel individuals by their geographic region
 ```{r}
 hf_a_reg<- radiator_hf_a
@@ -114,7 +110,9 @@ ggplot(data = melted.reg, aes(Var2, Var1, fill = value))+ geom_tile(color = "whi
   coord_fixed()
 ```
 #need to remove MD. prob can't repeat above with 2 regions. 
+
 #MD removed! see end of Erigenia_Python_perSilliman.Rmd, made hierfstat & genlight (genind impossible.)
+Below is a rerun of much of above code with MD individuals
 ```{r}
 setwd("~/github/Erigenia-Analyses/a166_radiator_genomic_converter_20190513a1509")
 ```
@@ -135,8 +133,6 @@ noMD.fst.mat<-genet.dist(radiator_hf_a_noMD, method = "WC84")
 save(noMD.fst.mat, file="noMD.fst.mat.RData")
 ```
 
-#height is in inches so abour 9 cm
-
 ```{r}
 noMD.gindF.fst.mat.tri <- as.matrix(noMD.fst.mat)
 colnames(noMD.gindF.fst.mat.tri)<- pop_order_noMD
@@ -152,6 +148,8 @@ RSSP   0.2288916 0.2962880 0.4692480 0.1639937 0.0000000 0.4947547 0.1871296 0.4
 SH     0.6100386 0.6748338 0.3247984 0.4988519 0.4947547 0.0000000 0.4816955 0.2401579
 SRCNA  0.2217568 0.2919878 0.4538422 0.1670948 0.1871296 0.4816955 0.0000000 0.4069650
 YF     0.5040910 0.5489660 0.1967257 0.4118465 0.4331413 0.2401579 0.4069650 0.0000000
+
+
 
 use below read in edited melted csv, if needed. (add a,b,c, etc. as needed to orient pops W to E)
 ```{r}
@@ -180,10 +178,7 @@ save_plot("Erigenia_Fst_figure_noMD.pdf", plot = combined_noMD, ncol = 1, nrow =
 ```
 
 
-
-
-
-#########################calculating regional fst's for reporting only (no graphs)
+#calculating regional fst's for reporting only (no graphs)
 relabel individuals by their geographic region
 #No figures for this
 ```{r}
@@ -210,9 +205,9 @@ output
 West   NA 0.3768538
 East   NA        NA
 
+Not super informative and no check on if these were grouped correctly
 
-
-
+#Bartlett Test
 
 need a genind to do bartlett test of observed vs expected heterozygosity, convert no md vcf to genind using VCFtools (manual/site: https://vcftools.github.io/man_latest.html)
 

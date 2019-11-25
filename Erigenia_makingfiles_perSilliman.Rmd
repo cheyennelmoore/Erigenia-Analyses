@@ -1,11 +1,13 @@
 ---
-title: "Following_Ostrea"
+title: "Preparing files"
 author: "AJM & CLM"
 date: "5/3/2019"
 output: github_document
 editor_options: 
   chunk_output_type: console
 ---
+
+Rmd #1
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -98,7 +100,7 @@ Total SNPS: 439647
 Unlinked SNPs: 77044
 
 erigeniaCU.vcf will be used for PCA (could also use for treemix)
-we skipped "Making outlier-only & neutral-only .vcf files" section.
+we skipped "Making outlier-only & neutral-only .vcf files" section of Ostrea outline.
 
 in "Making files for other programs" we will turn filtered .vcf files into other appropriate formats (genind, hierfstat, and maybe geno). 3 parts, we are following along with the section "combined dataset".
 
@@ -121,7 +123,7 @@ Erigenia.strata<-read.table("Erigenia.strata",sep="\t",header=TRUE)
 ```
 
 ```{r install package radiator}
-#this gave us some issues
+#this gave us some issues- radiator has had some recent updates
 if (!require("devtools")) install.packages("devtools")
 devtools::install_github("thierrygosselin/radiator", force=TRUE)
 library("radiator")
@@ -131,7 +133,7 @@ radiator::detect_genomic_format(data="Erigenia_filtered.recode.vcf")
 ```
 read in vcf file made via vcftools above, prepare to filter using radiator
 
-This is how you should read in a vcf (not with vcfR)
+How to read in a vcf (not with vcfR)
 ```{r reading in vcf}
 Erigenia_filtered.recode.vcf <- read_vcf("Erigenia_filtered.recode.vcf")
 ```
@@ -139,7 +141,7 @@ Erigenia_filtered.recode.vcf <- read_vcf("Erigenia_filtered.recode.vcf")
 Use radiator (a genomic converter) to convert vcf file to a genind object and a hierfstat object. Keeps markers common in all populations. hierfstat file made = radiator_data_20190508@1444.dat
 genind also made with a logical name.
 
--Eventually we had to remove @ and changed to a so R would run code. If redoing these analyses try changing @ to a.
+Eventually we had to remove @ and changed to a so R would run code. If redoing these analyses try changing @ to a.
 
 #useful links for radiator: https://rdrr.io/github/thierrygosselin/radiator/man/read_strata.html, https://rdrr.io/github/thierrygosselin/radiator/man/genomic_converter.html
 ```{r converting with radiator}
@@ -149,9 +151,9 @@ rad.filt <- radiator::genomic_converter("Erigenia_filtered.recode.vcf",
                        parallel.core = 1, verbose=TRUE)
                         
 ```
-this function has replaced vcf2...
+This function has replaced vcf2 in the radiator package- vcf2 was used for the Ostrea/Silliman analyses
 
-read in unlinked vcf file made via vcftools, prepare to convert/filter using radiator
+Read in unlinked vcf file made via vcftools, prepare to convert/filter using radiator
 ```{r read in unlinked vcf}
 ErigeniaCU.vcf <- read_vcf("ErigeniaCU.vcf")
 ```
@@ -164,7 +166,10 @@ rad.filt.u <- radiator::genomic_converter("ErigeniaCU.vcf",
                        parallel.core = 1, verbose=TRUE)
                         
 ```
-Make input for pcadapt: a table with the allele counts per individual. Saves the table stored in a genind object.
+Note on genlight vs genind- genlight is a better choice for use with GBS (or any reduced rep seq data), however you may encounter packaged that are not yet updated to handle genlight and will instead only use a genind. A genind will take much longer to generate as well. 
+
+
+Potentially useful: Make input for pcadapt: a table with the allele counts per individual. Saves the table stored in a genind object.
 
 ```{r reading in the genind}
 library("readr")
@@ -176,13 +181,17 @@ Erigenia_u_table <- write.table(radiator_genind_u,sep = "\t",row.names = T,col.n
 
 
 #Removing MD individuals for downstream analysis
+
+Note: MD individuals were herbarium specimens with unique SNPS and subpar coverage. After preliminary analyses we decided to remove them. More data was retained in ipyrad and vcftools processing when MD was removed. 
+
+The below analyses are mostly the same as above except for the removal of MD individuals. 
+
 useful links for radiator: https://rdrr.io/github/thierrygosselin/radiator/man/read_strata.html, https://rdrr.io/github/thierrygosselin/radiator/man/genomic_converter.html
 Use radiator (a genomic converter) to convert vcf file to a genind object and a hierfstat object. Keeps markers common in all populations. hierfstat file looks like = radiator_data_20190508@1444.dat
-genind also made, with a logical name.
+genind also made, with a logical name (includes .genind).
 
 
------
-Not sure if we need this:
+If you're jumping in here without running above code you will need to library your packages
 
 ```{r library again}
 library("adegenet")
@@ -200,8 +209,6 @@ use read_strata and pop.select in radiator to eliminate MD population (this work
 ```{r readin in strata}
 read_strata(Erigenia.strata, pop.select = c("BTP","CCP","PB","RCSPWR","RSSP","SH", "SRCNA", "YF"))
 ```
------
-
 
 
 manually edited old strata file to delete MD individuals, this allows retention of other data columns

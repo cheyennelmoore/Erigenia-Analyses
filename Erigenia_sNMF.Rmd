@@ -1,9 +1,11 @@
 ---
-title: "Erigenia sNMF"
+title: "sNMF"
 author: "AJM & CLM"
 date: "7/1/2019"
 output: html_document
 ---
+
+Rmd #5
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -41,8 +43,8 @@ project = load.snmfProject("erigeniaC_B.snmfProject")
 plot(erigenia_snmf_B, col = "blue4", cex = 1.4, pch = 19)
 ```
 
-save fig
-```{r making structure like plot}
+save figure
+```{r making structure like plot for pub}
 best2_B = which.min(cross.entropy(erigenia_snmf_B, K = 2))
 my.colors <- c("tomato", "lightblue") #change colors if ya want 
 pdf("B_snmf_plot_2pop.pdf", width = 6, height = 3.5)
@@ -58,7 +60,7 @@ cex.axis = .3)
 dev.off()
 ```
 
-```{r making structure like plot}
+```{r making structure like plot k3}
 best3_B = which.min(cross.entropy(erigenia_snmf_B, K = 3))
 my.colors <- c("tomato", "lightblue", "gold")
 tiff(filename="B_snmf_plot_3pop.tiff", width = 4, height = 4, units = 'in', res = 300)
@@ -89,7 +91,7 @@ hist(pvalues, col = "orange")
 plot(-log10(pvalues), pch = 19, col = "blue", cex = .7)
 ```
 
-lfmm quasi gwas thing
+lfmm quasi gwas 
 ```{r adjusted p}
 # compute adjusted p-values
 p = lfmm.pvalues(erigenia_snmf_B, K = 2)
