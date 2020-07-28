@@ -115,7 +115,7 @@ library("dplyr")
 
 ```
 
-```{r read in vdf with vcfR}
+```{r read in vdf with vcfR don't need it}
 Erigenia_filtered.recode.vcf <- read.vcfR("Erigenia_filtered.recode.vcf")
 ```
 ```{r read in strata file}
@@ -143,6 +143,53 @@ genind also made with a logical name.
 
 Eventually we had to remove @ and changed to a so R would run code. If redoing these analyses try changing @ to a.
 
+output from reading in vcf:
+Reading VCF
+Data summary: 
+    number of samples: 124
+    number of markers: 16019
+done! timing: 2 sec
+
+
+File written: radiator_20200728@1915.gds
+
+Analyzing the data...
+VCF source: ipyrad_v.0.7.30
+Data is bi-allelic
+Cleaning VCF's sample names
+Reads assembly: reference-assisted
+Filters parameters file generated: filters_parameters_20200728@1915.tsv
+Filters parameters file: initiated and updated
+################################################################################
+######################### radiator::filter_monomorphic #########################
+################################################################################
+Execution date@time: 20200728@1915
+Function call and arguments stored in: radiator_filter_monomorphic_args_20200728@1915.tsv
+Filters parameters file: initiated
+File written: whitelist.polymorphic.markers_20200728@1915.tsv
+Filters parameters file: updated
+################################### RESULTS ####################################
+
+Filter monomorphic markers
+Number of individuals / strata / chrom / locus / SNP:
+    Before: 124 / 1 / 2295 / 2295 / 16019
+    Blacklisted: 0 / 0 / 0 / 0 / 0
+    After: 124 / 1 / 2295 / 2295 / 16019
+
+Computation time, overall: 1 sec
+######################### completed filter_monomorphic #########################
+################################################################################
+####################### radiator::filter_common_markers ########################
+################################################################################
+Execution date@time: 20200728@1915
+Function call and arguments stored in: radiator_filter_common_markers_args_20200728@1915.tsv
+Filters parameters file: initiated
+Scanning for common markers...
+Only 1 strata...returning data
+
+Computation time, overall: 0 sec
+####################### completed filter_common_markers ########################
+
 #useful links for radiator: https://rdrr.io/github/thierrygosselin/radiator/man/read_strata.html, https://rdrr.io/github/thierrygosselin/radiator/man/genomic_converter.html
 ```{r converting with radiator}
 rad.filt <- radiator::genomic_converter("Erigenia_filtered.recode.vcf",
@@ -152,6 +199,26 @@ rad.filt <- radiator::genomic_converter("Erigenia_filtered.recode.vcf",
                         
 ```
 This function has replaced vcf2 in the radiator package- vcf2 was used for the Ostrea/Silliman analyses
+
+output from reading file in:Importing data
+
+
+Reading VCF
+Data summary: 
+    number of samples: 124
+    number of markers: 16019
+done! timing: 1 sec
+
+
+Filter monomorphic markers
+Number of individuals / strata / chrom / locus / SNP:
+    Blacklisted: 0 / 0 / 0 / 0 / 0
+
+Computation time, overall: 1 sec
+
+Filter common markers:
+Number of individuals / strata / chrom / locus / SNP:
+    Blacklisted: 0 / 0 / 917 / 917 / 6773
 
 Read in unlinked vcf file made via vcftools, prepare to convert/filter using radiator
 ```{r read in unlinked vcf}
