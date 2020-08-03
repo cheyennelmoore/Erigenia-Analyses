@@ -1,0 +1,116 @@
+---
+title: "Erigenia_vcf_stats"
+author: "CLM"
+date: "8/3/2020"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+install.packages("tidyverse")
+library(tidyverse)
+```
+```{r}
+setwd("~/Documents/RStudio/Erigenia/Erigenia_Analyses/vcf_tools/14350_output")
+```
+
+```{r}
+var_qual <- read_delim("./qual_site_out.lqual", delim = "\t",
+           col_names = c("chr", "pos", "qual"), skip = 1)
+```
+```{r}
+a <- ggplot(var_qual, aes(qual)) + geom_histogram(fill = "dodgerblue1", colour = "black", alpha = 0.5)
+a + theme_light() 
+a + ylim(0, 20000)
+a + xlim(0, 20)
+```
+we don't need this- all 13 qual
+
+
+```{r}
+var_depth <- read_delim("./depth_site_out.ldepth.mean", delim = "\t",
+           col_names = c("chr", "pos", "mean_depth", "var_depth"), skip = 1)
+```
+```{r}
+a <- ggplot(var_depth, aes(mean_depth)) + geom_density(fill = "dodgerblue1", colour = "black", alpha = 0.3)
+a + theme_light()
+a + xlim(0, 100)
+```
+```{r}
+summary(var_depth$mean_depth)
+```
+ Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+  8.246  14.508  17.627  18.870  21.169 969.576 
+
+
+```{r}
+var_miss <- read_delim("./missing_site_out.lmiss", delim = "\t",
+                       col_names = c("chr", "pos", "nchr", "nfiltered", "nmiss", "fmiss"), skip = 1)
+```
+```{r}
+a <- ggplot(var_miss, aes(fmiss)) + geom_density(fill = "dodgerblue1", colour = "black", alpha = 0.3)
+a + theme_light()
+a + xlim(0, .6)
+```
+```{r}
+summary(var_miss$fmiss)
+```
+Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.0000  0.2458  0.2966  0.2936  0.3475  0.4068
+ 
+
+
+```{r}
+var_freq <- read_delim("./all_freq_out.frq", delim = "\t",
+                       col_names = c("chr", "pos", "nalleles", "nchr", "a1", "a2"), skip = 1)
+```
+```{r}
+# find minor allele frequency
+var_freq$maf <- var_freq %>% select(a1, a2) %>% apply(1, function(z) min(z))
+```
+```{r}
+a <- ggplot(var_freq, aes(maf)) + geom_density(fill = "dodgerblue1", colour = "black", alpha = 0.3)
+a + theme_light()
+a + xlim(-0.1, 0.6)
+```
+```{r}
+summary(var_freq$maf)
+```
+ Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+0.03846 0.09659 0.20422 0.22952 0.35227 0.50000
+
+
+```{r}
+ind_depth <- read_delim("./depth_indiv_out.idepth", delim = "\t",
+                        col_names = c("ind", "nsites", "depth"), skip = 1)
+```
+```{r}
+a <- ggplot(ind_depth, aes(depth)) + geom_histogram(fill = "dodgerblue1", colour = "black", alpha = 0.3)
+a + theme_light()
+```
+
+
+```{r}
+ind_miss  <- read_delim("./missing_indiv_out.imiss", delim = "\t",
+                        col_names = c("ind", "ndata", "nfiltered", "nmiss", "fmiss"), skip = 1)
+```
+```{r}
+a <- ggplot(ind_miss, aes(fmiss)) + geom_histogram(fill = "dodgerblue1", colour = "black", alpha = 0.3)
+a + theme_light()
+```
+
+
+```{r}
+ind_het <- read_delim("./het_out.het", delim = "\t",
+           col_names = c("ind","ho", "he", "nsites", "f"), skip = 1)
+```
+```{r}
+a <- ggplot(ind_het, aes(f)) + geom_histogram(fill = "dodgerblue1", colour = "black", alpha = 0.3)
+a + theme_light()
+```
+HOLY Fis! Very high!
