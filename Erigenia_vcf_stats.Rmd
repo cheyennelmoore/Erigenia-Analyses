@@ -114,3 +114,11 @@ a <- ggplot(ind_het, aes(f)) + geom_histogram(fill = "dodgerblue1", colour = "bl
 a + theme_light()
 ```
 HOLY Fis! Very high!
+```{r}
+a <- ggplot(ind_het, aes(ho)) + geom_histogram(fill = "dodgerblue1", colour = "black", alpha = 0.3)
+a + theme_light()
+```
+```{r}
+a <- ggplot(ind_het, aes(he)) + geom_histogram(fill = "dodgerblue1", colour = "black", alpha = 0.3)
+a + theme_light()
+```

@@ -260,6 +260,24 @@ radiator_genind_u <- read_rds("/Volumes/Thunderbolt/Users/PostDoc/Github/Erigeni
 Erigenia_u_table <- write.table(radiator_genind_u,sep = "\t",row.names = T,col.names = T,quote = F )
 ```
 
+#filter_rad with radiator to convert and filter 
+-post reviews
+```{r}
+filter_rad("Erigenia_filtered.recode.vcf",
+  strata = Erigenia.strata,
+  interactive.filter = TRUE,
+  output = c("genlight","hierfstat"),
+  filename = NULL ,
+  verbose = TRUE,
+  parallel.core = parallel::detectCores() - 1,)
+```
+
+```{r}
+extract_individuals_vcf("Erigenia_filtered.recode.vcf")
+```
+
+
+
 
 #Removing MD individuals for downstream analysis
 

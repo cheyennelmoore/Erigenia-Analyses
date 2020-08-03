@@ -1,0 +1,59 @@
+---
+title: "Erigenia_vcf_to_genlight"
+author: "CLM"
+date: "8/3/2020"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+```{r}
+library(adegenet)
+library(pegas)
+library(vcfR)
+library(dartR)
+```
+
+```{r}
+setwd("~/Documents/RStudio/Erigenia/Erigenia_Analyses/vcf_tools")
+```
+
+```{r}
+vcf<-read.vcfR("erigeniaC_noMD_filtered.recode_14350_118.vcf")
+```
+
+
+```{r}
+new_Erigenia_gl <- vcfR2genlight(vcf)
+```
+  
+#doing analyses
+```{r}
+indNames(new_Erigenia_gl)
+```
+```{r}
+levels(pop(new_Erigenia_gl))
+```
+need to assign pops 
+
+```{r grunwald}
+pop(new_Erigenia_gl) <- as.factor(c("PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","YorkFurnace","YorkFurnace","YorkFurnace","YorkFurnace","YorkFurnace","YorkFurnace","YorkFurnace","YorkFurnace","YorkFurnace","YorkFurnace","YorkFurnace","YorkFurnace","YorkFurnace","YorkFurnace","SafeHarbor","SafeHarbor","SafeHarbor","SafeHarbor","SafeHarbor","SafeHarbor","SafeHarbor","SafeHarbor","SafeHarbor","RaccoonCreek","RaccoonCreek","RaccoonCreek","RaccoonCreek","RaccoonCreek","RaccoonCreek","RaccoonCreek","RaccoonCreek","RaccoonCreek","RaccoonCreek","RaccoonCreek","RaccoonCreek","RaccoonCreek","RaccoonCreek","RaccoonCreek","CedarCreek","CedarCreek","CedarCreek","CedarCreek","CedarCreek","CedarCreek","CedarCreek","CedarCreek","CedarCreek","CedarCreek","CedarCreek","CedarCreek","CedarCreek","CedarCreek","CedarCreek","BraddockTrail","BraddockTrail","BraddockTrail","BraddockTrail","BraddockTrail","BraddockTrail","BraddockTrail","BraddockTrail","BraddockTrail","BraddockTrail","BraddockTrail","BraddockTrail","BraddockTrail","BraddockTrail","BraddockTrail","RyersonStation","RyersonStation","RyersonStation","RyersonStation","RyersonStation","RyersonStation","RyersonStation","RyersonStation","RyersonStation","RyersonStation","RyersonStation","RyersonStation","RyersonStation","RyersonStation","RyersonStation","SlipperyRockCreek","SlipperyRockCreek","SlipperyRockCreek","SlipperyRockCreek","SlipperyRockCreek","SlipperyRockCreek","SlipperyRockCreek","SlipperyRockCreek","SlipperyRockCreek","SlipperyRockCreek","SlipperyRockCreek","SlipperyRockCreek","SlipperyRockCreek","SlipperyRockCreek","SlipperyRockCreek"))
+popNames(new_Erigenia_gl)
+```
+https://grunwaldlab.github.io/Population_Genetics_in_R/analysis_of_genome.html
+
+#PCA
+```{r}
+pc <- gl.pcoa(new_Erigenia_gl, nfactors=5)
+```
+
+```{r}
+gl.pcoa.plot(pc, new_Erigenia_gl, labels="pop", xaxis=1, yaxis=2)
+```
+
