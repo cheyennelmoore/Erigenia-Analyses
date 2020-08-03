@@ -1,0 +1,106 @@
+---
+title: "Erigenia_IBD_amova"
+author: "CLM"
+date: "8/3/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Rmd #6
+ BELOW IS CODE FROM BAPTISIA ANALYSES WITH DARTR
+ 
+ 
+#Mantel Test 
+
+```{r}
+coords <- read.csv ("coords.csv", header=TRUE) #for each pop
+coords_all<-read.csv("coords_all.csv", header=TRUE) #for each individual
+```
+
+```{r alternative to assigning coords_all to the gl}
+Dgen <- gl.dist.pop(Bap_allB_genlight, method="euclidean")
+Dgeo <- dist(coords)
+```
+```{r}
+Dgen
+```
+
+```{r}
+Bap_allB_genlight@other$latlong<-coords_all
+Bap_allB_genlight@other$latlong
+Bap_allB_genlight@pop
+```
+
+```{r}
+Bap_ibd<- gl.ibd(gl = Bap_allB_genlight, Dgen = NULL, Dgeo = NULL, projected = TRUE,
+  permutations = 999, plot = TRUE)
+```
+Call:
+mantel(xdis = Dgen, ydis = Dgeo, permutations = 999, na.rm = TRUE) 
+
+Mantel statistic r:   NaN 
+      Significance: NA 
+
+Upper quantiles of permutations (null model):
+  90%   95% 97.5%   99% 
+   NA    NA    NA    NA 
+Permutation: free
+Number of permutations: 999
+
+```{r}
+Bap_ibd_<- gl.ibd(gl = NULL, Dgen = Dgen, Dgeo = Dgeo, projected = TRUE,
+  permutations = 999, plot = TRUE)
+```
+bandwidth error has to do with population, b/c multiple individuals have the same coordinates it is not happy
+
+
+```{r}
+Bap_ibd_2<- mantel.randtest(Dgen, Dgeo)
+```
+
+
+```{r}
+Bap_ibd_2
+plot(Bap_ibd_2)
+```
+
+Try it w/o Ernst
+```{r}
+Bap_ibd_noErnst<- gl.ibd(gl = Bap_allB_gl_noErnst, Dgen = NULL, Dgeo = NULL, projected = TRUE,
+  permutations = 999, plot = TRUE)
+```
+
+Heck yeah it worked!
+Mantel statistic r: 0.6112 
+      Significance: 0.001 
+
+Upper quantiles of permutations (null model):
+  90%   95% 97.5%   99% 
+0.173 0.280 0.425 0.457 
+Permutation: free
+Number of permutations: 999
+```{r}
+Bap_ibd_noErnst
+```
+
+```{r}
+Bap_ibd_Allegheny<- gl.ibd(gl = Bap_allB_gl_Allegheny, Dgen = NULL, Dgeo = NULL, projected = TRUE,
+  permutations = 999, plot = TRUE)
+
+```
+Mantel statistic r: 0.5922 
+      Significance: 0.001 
+
+Upper quantiles of permutations (null model):
+  90%   95% 97.5%   99% 
+0.166 0.197 0.232 0.266 
+Permutation: free
+Number of permutations: 999
+
+
+What does this mean? http://qiime.org/1.5.0/tutorials/distance_matrix_comparison.html
+
+Signifigance!
