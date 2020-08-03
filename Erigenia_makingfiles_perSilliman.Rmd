@@ -106,14 +106,28 @@ in "Making files for other programs" we will turn filtered .vcf files into other
 
 
 #Moving into R
+
+
+
+
+
+
 ```{r library}
 library("adegenet")
 library("radiator")
 if (!require("devtools")) install.packages("devtools")
-devtools::install_github("tidyverse/dplyr", force=TRUE)
+devtools::install_github("tidyverse/dplyr")
 library("dplyr")
-
+install.packages("gsl")
+devtools::install_github("thierrygosselin/grur")
+devtools::install_github("thierrygosselin/assigner")
 ```
+```{r3}
+if (!require("devtools")) install.packages("devtools")
+devtools::install_github("thierrygosselin/radiator")
+library(radiator)
+```
+don't update
 
 ```{r read in vdf with vcfR don't need it}
 Erigenia_filtered.recode.vcf <- read.vcfR("Erigenia_filtered.recode.vcf")
@@ -195,9 +209,9 @@ Computation time, overall: 0 sec
 rad.filt <- radiator::genomic_converter("Erigenia_filtered.recode.vcf",
                        strata=Erigenia.strata,
                        output = c("genind","hierfstat"),
-                       parallel.core = 1, verbose=TRUE)
-                        
+                        verbose=TRUE)
 ```
+
 This function has replaced vcf2 in the radiator package- vcf2 was used for the Ostrea/Silliman analyses
 
 output from reading file in:Importing data
