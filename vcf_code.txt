@@ -1,0 +1,197 @@
+VCF tools
+https://speciationgenomics.github.io/filtering_vcfs/
+
+TEST code:
+Calc allele freq
+(base) Cheyennes-MBP:vcf_tools cheyennemoore$ vcftools --vcf Erigenia_filtered.recode.vcf --freq2 --out OG_output/out --max-alleles 2
+
+VCFtools - 0.1.16
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--vcf erigeniaC_noMD.vcf
+	--max-alleles 2
+	--freq2
+	--out OG_output/out
+
+After filtering, kept 120 out of 120 Individuals
+Outputting Frequency Statistics...
+After filtering, kept 430563 out of a possible 436075 Sites
+Run Time = 21.00 seconds
+(base) Cheyennes-MBP:vcf_tools cheyennemoore$ ls
+OG_output		erigeniaC_noMD.vcf
+(base) Cheyennes-MBP:vcf_tools cheyennemoore$ cd output/
+(base) Cheyennes-MBP:OG_output cheyennemoore$ ls
+out.frq	out.log
+(base) Cheyennes-MBP:OG_output cheyennemoore$ cat out.frq 
+CHROM	POS	N_ALLELES	N_CHR	{FREQ}
+locus_2	14	2	36	0.75	0.25
+locus_2	95	2	36	0.722222	0.277778
+locus_2	129	2	32	0.96875	0.03125
+
+
+#allele freq of vcf output from ipyrad noMD post vcf tools filtering
+->Calculate allele frequency
+First we will calculate the allele frequency for each variant. The --freq2 just outputs the frequencies without information about the alleles, --freq would return their identity. We need to add max-alleles 2 to exclude sites that have more than two alleles.
+
+-------------------
+Here we filter the vcf output from the ipyrad output (without Maryland). Filtering was done with several different params to optimize output. 
+
+FILTERING ipyrad output (noMD)
+(base) Cheyennes-MBP:vcf_tools cheyennemoore$ vcftools --vcf erigeniaC_noMD.vcf --remove-indels --maf 0.05 --max-missing 0.75 --min-meanDP 5  --minDP 5  --recode --out erigeniaC_noMD_filtered
+
+VCFtools - 0.1.16
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--vcf erigeniaC_noMD.vcf
+	--maf 0.05
+	--minDP 5
+	--min-meanDP 5
+	--max-missing 0.75
+	--out erigeniaC_noMD_filtered
+	--recode
+	--remove-indels
+
+After filtering, kept 120 out of 120 Individuals
+Outputting VCF file...
+After filtering, kept 3397 out of a possible 436075 Sites
+Run Time = 23.00 seconds
+
+out=erigeniaC_noMD_filtered.recode_3397.vcf
+
+->>>>changed params 
+
+(base) Cheyennes-MBP:vcf_tools cheyennemoore$ vcftools --vcf erigeniaC_noMD.vcf --remove-indels --maf 0.05 --max-missing 0.70 --min-meanDP 5  --minDP 5  --recode --out erigeniaC_noMD_filtered
+
+VCFtools - 0.1.16
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--vcf erigeniaC_noMD.vcf
+	--maf 0.05
+	--minDP 5
+	--min-meanDP 5
+	--max-missing 0.7
+	--out erigeniaC_noMD_filtered
+	--recode
+	--remove-indels
+
+After filtering, kept 120 out of 120 Individuals
+Outputting VCF file...
+After filtering, kept 6950 out of a possible 436075 Sites
+Run Time = 24.00 seconds
+(base) Cheyennes-MBP:vcf_tools cheyennemoore$ mv erigeniaC_noMD_filtered.recode.vcf erigeniaC_noMD_filtered.recode_6950.vcf 
+(base) Cheyennes-MBP:vcf_tools cheyennemoore$ 
+
+->>>>changed params 
+
+(base) Cheyennes-MBP:vcf_tools cheyennemoore$ vcftools --vcf erigeniaC_noMD.vcf --remove-indels --maf 0.05 --max-missing 0.60 --min-meanDP 5  --minDP 5  --recode --out erigeniaC_noMD_filtered
+
+VCFtools - 0.1.16
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--vcf erigeniaC_noMD.vcf
+	--maf 0.05
+	--minDP 5
+	--min-meanDP 5
+	--max-missing 0.6
+	--out erigeniaC_noMD_filtered
+	--recode
+	--remove-indels
+
+After filtering, kept 120 out of 120 Individuals
+Outputting VCF file...
+After filtering, kept 14395 out of a possible 436075 Sites
+Run Time = 26.00 seconds
+(base) Cheyennes-MBP:vcf_tools cheyennemoore$ mv erigeniaC_noMD_filtered.recode.vcf erigeniaC_noMD_filtered.recode_14395.vcf 
+(base) Cheyennes-MBP:vcf_tools cheyennemoore$
+
+Good filtering 
+
+->>>>> changed alleles kept =2
+(base) Cheyennes-MBP:vcf_tools cheyennemoore$ vcftools --vcf erigeniaC_noMD.vcf --remove-indels --maf 0.05 --max-missing 0.60 --min-meanDP 5  --minDP 5  --max-alleles 2 --min-alleles 2 --recode --out erigeniaC_noMD_filtered
+
+VCFtools - 0.1.16
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--vcf erigeniaC_noMD.vcf
+	--maf 0.05
+	--max-alleles 2
+	--min-alleles 2
+	--minDP 5
+	--min-meanDP 5
+	--max-missing 0.6
+	--out erigeniaC_noMD_filtered
+	--recode
+	--remove-indels
+
+After filtering, kept 120 out of 120 Individuals
+Outputting VCF file...
+After filtering, kept 14350 out of a possible 436075 Sites
+Run Time = 25.00 seconds
+(base) Cheyennes-MBP:vcf_tools cheyennemoore$ mv erigeniaC_noMD_filtered.recode.vcf erigeniaC_noMD_filtered.recode_14350.vcf
+(base) Cheyennes-MBP:vcf_tools cheyennemoore$ 
+
+out= erigeniaC_noMD_filtered.recode_14350.vcf
+This is the file we will use for stats and downstream analyses so long as stats look good. 
+
+------------
+We will use this file: erigeniaC_noMD_filtered.recode_14350.vcf
+for analyses- check stats allel freq etc (see tutorial-link at top)
+
+--->Allele freq
+vcftools --vcf erigeniaC_noMD_filtered.recode_14350_118.vcf --freq2 --out 14350_output/all_freq_out --max-alleles 2
+
+--->Mean depth per indiv
+vcftools --vcf erigeniaC_noMD_filtered.recode_14350_118.vcf --depth --out 14350_output/depth_indiv_out 
+
+--->Mean depth per site
+vcftools --vcf erigeniaC_noMD_filtered.recode_14350_118.vcf --site-mean-depth --out 14350_output/depth_site_out 
+
+--->Site quality
+vcftools --vcf erigeniaC_noMD_filtered.recode_14350_118.vcf --site-quality --out 14350_output/qual_site_out
+
+
+--->Missing data per indiv
+vcftools --vcf erigeniaC_noMD_filtered.recode_14350_118.vcf --missing-indv --out 14350_output/missing_indiv_out
+
+
+--->Missing data per site
+vcftools --vcf erigeniaC_noMD_filtered.recode_14350_118.vcf --missing-site --out 14350_output/missing_site_out
+
+
+--->Het and inbreeding per indiv
+vcftools --vcf erigeniaC_noMD_filtered.recode_14350_118.vcf --het --out 14350_output/het_out
+
+
+This all worked! 
+-----------------
+We decided to remove YF2 and SH6 because of missing data >80% accoring to .imiss file
+code:
+vcftools --remove-indv YOUR_INDIVIDUALS_NAME --vcf your_snps.vcf --out your_filtered_snps.vcf
+eribul_AJM367_YF2 and eribul_AJM368_SH6
+
+(base) Cheyennes-MBP:vcf_tools cheyennemoore$ vcftools --remove-indv eribul_AJM367_YF2 --remove-indv eribul_AJM368_SH6 --vcf erigeniaC_noMD_filtered.recode_14350.vcf --recode --out erigeniaC_noMD_filtered.recode_14350_118.vcf
+
+VCFtools - 0.1.16
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--vcf erigeniaC_noMD_filtered.recode_14350.vcf
+	--out erigeniaC_noMD_filtered.recode_14350_118.vcf
+	--remove-indv eribul_AJM367_YF2
+	--remove-indv eribul_AJM368_SH6
+
+Excluding individuals in 'exclude' list
+After filtering, kept 118 out of 120 Individuals
+After filtering, kept 14350 out of a possible 14350 Sites
+Run Time = 0.00 seconds
+
+Now rerunning stats from above with new _118 file (overwriting the old output) - added _118 to make code work
+
+Final output file = erigeniaC_noMD_filtered.recode_14350_118.vcf
+
+See Erigenia_vdf_stats.Rmd for graphs of quality check files
