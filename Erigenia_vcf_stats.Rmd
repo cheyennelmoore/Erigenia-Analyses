@@ -11,6 +11,12 @@ editor_options:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+This code is based on the following link: https://speciationgenomics.github.io/filtering_vcfs/
+
+vcftools command line code was documented in a vcf_code.txt which will be added to the git repo
+
+This code is designed to visualize the stats of our vcf file. These figure will be useful for supplemental material in MS. 
+
 ```{r}
 install.packages("tidyverse")
 library(tidyverse)
@@ -109,16 +115,16 @@ a + theme_light()
 ind_het <- read_delim("./het_out.het", delim = "\t",
            col_names = c("ind","ho", "he", "nsites", "f"), skip = 1)
 ```
-```{r}
+```{r fis}
 a <- ggplot(ind_het, aes(f)) + geom_histogram(fill = "dodgerblue1", colour = "black", alpha = 0.3)
 a + theme_light()
 ```
 HOLY Fis! Very high!
-```{r}
+```{r obs het}
 a <- ggplot(ind_het, aes(ho)) + geom_histogram(fill = "dodgerblue1", colour = "black", alpha = 0.3)
 a + theme_light()
 ```
-```{r}
+```{r exp het}
 a <- ggplot(ind_het, aes(he)) + geom_histogram(fill = "dodgerblue1", colour = "black", alpha = 0.3)
 a + theme_light()
 ```
