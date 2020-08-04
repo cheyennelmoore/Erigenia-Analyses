@@ -1,0 +1,201 @@
+---
+title: "Erigenia_Fstats_GenDiv"
+author: "CLM"
+date: "8/4/2020"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r library}
+
+```
+
+
+#Basic stats with dartR
+```{r}
+gl.basic.stats(new_Erigenia_gl)
+```
+
+$overall
+    Ho     Hs     Ht    Dst    Htp   Dstp    Fst   Fstp    Fis   Dest 
+0.0553 0.1530 0.3171 0.1642 0.3406 0.1876 0.5176 0.5509 0.6385 0.2215 
+
+can we do per pop?
+
+
+#Basic stats with hierfstat
+basicstat is a hierfstat function to tell you Fis etc
+edit to work with 
+https://cran.r-project.org/web/packages/hierfstat/vignettes/import.html
+```{r}
+basicstat <- basic.stats(radiator_hf_a_noMD, diploid=TRUE, digits=3)
+```
+```{r}
+save(basicstat, file="basicstat.RData")
+```
+
+```{r}
+names(basicstat)
+```
+```{r}
+overall_basic_stats <- as.data.frame(basicstat$overall)
+overall_basic_stats
+```
+
+get bootstrap confidence values for Fis
+```{r}
+boot<- boot.ppfis(radiator_hf_a_noMD, nboot=1000)
+boot5<-boot.ppfis(radiator_hf_a_noMD, nboot=1000, quant=0.5)
+```
+this takes a while (about 1 hour)
+
+```{r}
+boot
+boot5
+```
+
+
+```{r}
+colnames(basicstat$Ho) <- pop_order_noMD
+Ho <- colMeans(basicstat$Ho,na.rm=T)
+He <- colMeans(basicstat$Hs,na.rm=T)
+Fis <- boot5$fis.ci$ll
+popgen_stats_noMD <- cbind(Ho,He,Fis,boot$fis.ci)
+popgen_stats_noMD
+```
+
+```{r}
+popgen_stats_noMD.csv <-write.table(popgen_stats_noMD, sep=",", dec=".", row.names=TRUE, col.names=TRUE)
+
+save(popgen_stats_noMD, file="popgen_stats_noMD")
+```
+
+#Fst
+This is with hierfstat but dartR recommends a package called stampp
+
+```{r population order for later}
+pop_order <- c("BTP","CCP","MD","PB","RCSPWR","RSSP","SH", "SRCNA", "YF")
+```
+
+
+This takes a long time (~30 minutes)
+```{r calculate fst}
+fst.mat<-genet.dist(radiator_hf_a, method = "WC84")
+```
+```{r}
+gindF.fst.mat.tri <- as.matrix(fst.mat)
+colnames(gindF.fst.mat.tri)<- pop_order
+rownames(gindF.fst.mat.tri)<- pop_order
+write.table(gindF.fst.mat.tri, file="ErigeniaFstWC84.pwfst", row.names=T,col.names=T)
+```
+This is so we can arrange these east to west
+```{r}
+newmelted<-read.csv("/Volumes/Thunderbolt/Users/PostDoc/Desktop/newmelted.csv", sep=",", header=TRUE)
+```
+```{r}
+melted <- melt(newmelted, na.rm = TRUE)
+```
+```{r}
+summary(melted$value)
+```
+
+FIGURE FOR PUB
+plotting using ggplot2
+```{r}
+library(cowplot)
+```
+```{r figure for fst}
+combined <- ggplot(data = melted, aes(Var2, Var1, fill = value))+ geom_tile(color = "white")+ 
+  scale_fill_gradient(low = "white", high = "red", name="FST")  +
+  ggtitle(expression(atop("Pairwise FST, WC (1984), Combined", atop(italic("N = 124, L = 9,243"), ""))))+
+  labs( x = "Sampling Site", y = "Sampling Site") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, size = 12, hjust = 1),axis.text.y = element_text(size = 13)) + 
+  coord_fixed()
+combined
+```
+
+
+can also do regional
+check Fst_per_Silliman if you want to 
+
+#Bartlett Test
+
+May run into issues with using a genlight here...
+```{r}
+bartlett.test(list(ErigeniaHet$Hexp, ErigeniaHet$Hobs))
+```
+	Bartlett test of homogeneity of variances
+Bartlett's K-squared = 24950, df = 1, p-value < 2.2e-16
+wow: across PA, Ho is very low, statistically significantly so.
+
+Now, separate pops and repeat Bartlett for each.
+Use seppop in adegenet to split the genind by population. use pop=NULL to let it use the pop slot in the big genind, makes a list.
+```{r}
+temp <- seppop(Erigenia_filtered_noMD.recode.genind)
+```
+make individual geninds from the list
+```{r}
+PB <- temp$PB
+BTP <- temp$BTP
+CCP <- temp$CCP
+RCSPWR <- temp$RCSPWR
+RSSP <- temp$RSSP
+SH <- temp$SH
+SRCNA <- temp$SRCNA
+YF <- temp$YF
+```
+
+each pop can now be called! do bartletts for each.
+```{r}
+PBHet <- summary(PB)
+bartlett.test(list(PBHet$Hexp, PBHet$Hobs))
+```
+Bartlett's K-squared = 7552.4, df = 1, p-value < 2.2e-16
+woo!
+
+```{r}
+BTPHet <- summary(BTP)
+bartlett.test(list(BTPHet$Hexp, BTPHet$Hobs))
+```
+Bartlett's K-squared = 5504, df = 1, p-value < 2.2e-16
+
+```{r}
+CCPHet <- summary(CCP)
+bartlett.test(list(CCPHet$Hexp, CCPHet$Hobs))
+```
+Bartlett's K-squared = 7075.6, df = 1, p-value < 2.2e-16
+
+```{r}
+RCSPWRHet <- summary(RCSPWR)
+bartlett.test(list(RCSPWRHet$Hexp, RCSPWRHet$Hobs))
+```
+Bartlett's K-squared = 6327.5, df = 1, p-value < 2.2e-16
+
+```{r}
+RSSPHet <- summary(RSSP)
+bartlett.test(list(RSSPHet$Hexp, RSSPHet$Hobs))
+```
+Bartlett's K-squared = 4835.7, df = 1, p-value < 2.2e-16
+
+```{r}
+SHHet <- summary(SH)
+bartlett.test(list(SHHet$Hexp, SHHet$Hobs))
+```
+Bartlett's K-squared = 1318.8, df = 1, p-value < 2.2e-16
+
+```{r}
+SRCNAHet<- summary(SRCNA)
+bartlett.test(list(SRCNAHet$Hexp, SHHet$Hobs))
+```
+Bartlett's K-squared = 11485, df = 1, p-value < 2.2e-16
+
+```{r}
+YFHet <- summary(YF)
+bartlett.test(list(YFHet$Hexp, SHHet$Hobs))
+```
+Bartlett's K-squared = 6642.3, df = 1, p-value < 2.2e-16

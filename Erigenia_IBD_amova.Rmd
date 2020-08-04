@@ -3,14 +3,15 @@ title: "Erigenia_IBD_amova"
 author: "CLM"
 date: "8/3/2020"
 output: html_document
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-Rmd #6
- BELOW IS CODE FROM BAPTISIA ANALYSES WITH DARTR
+BELOW IS CODE FROM BAPTISIA ANALYSES WITH DARTR- edit to work for Erigenia
  
  
 #Mantel Test 
@@ -103,4 +104,39 @@ Number of permutations: 999
 
 What does this mean? http://qiime.org/1.5.0/tutorials/distance_matrix_comparison.html
 
-Signifigance!
+#AMOVA
+
+https://grunwaldlab.github.io/Population_Genetics_in_R/AMOVA.html
+https://grunwaldlab.github.io/poppr/reference/poppr.amova.html
+https://rdrr.io/cran/dartR/man/gl.amova.html
+
+```{r}
+Erigenia_amova<-gl.amova(new_Erigenia_gl)
+```
+
+```{r}
+Erigenia_amova
+```
+	Analysis of Molecular Variance
+
+Call: amova(formula = dist ~ pop.names, nperm = perm)
+
+               SSD        MSD  df
+pop.names 7.878932 1.12556178   7
+Error     1.338694 0.01216994 110
+Total     9.217626 0.07878313 117
+
+Variance components:
+            sigma2 P.value
+pop.names 0.075867       0
+Error     0.012170        
+
+Phi-statistics:
+pop.names.in.GLOBAL 
+          0.8617635 
+
+Variance coefficients:
+       a 
+14.67554 
+
+Idk what this mean, will have to look into output

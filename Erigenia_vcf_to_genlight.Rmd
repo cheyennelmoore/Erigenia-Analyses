@@ -270,8 +270,11 @@ assignplot(dapc4)
 ```
 3 is better so I think PC=10 is best
 
-#STRUCTURE-like plot- not super effective could  come back to
+##STRUCTURE-like plot- not super effective could  come back to
 ```{r DAPC structure plot}
 compoplot(dapc3,col = myCol, posi = 'bottom')
 ```
 FUN
+
+##PCA 
+could make the one above better or use code in genetic diversity Rmd
