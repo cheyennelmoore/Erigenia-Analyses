@@ -136,6 +136,9 @@ cex=3,clab=0, leg=TRUE, txt.leg=paste("Cluster",1:8))
 ```
 
 
+
+
+
 Explore other PCs 
 ------------- Investigating number of PCs with alpha values etc
 http://adegenet.r-forge.r-project.org/files/tutorial-dapc.pdf pg 37
@@ -253,13 +256,13 @@ cex=3,clab=0, leg=TRUE, txt.leg=paste("Cluster",1:8))
 
 ```{r save fig}
 myCol <- c("burlywood4","darkviolet","green","orange","red","dodgerblue3","black","gold2")
-pdf("DAPC.pdf", width = 6, height = 4)
-scatter(Erigenia.dapc_newPCs, posi.da="bottomright", bg="white",
+#pdf("DAPC.pdf", width = 6, height = 4)
+scatter(dapc3, posi.da="bottomright", bg="white",
 pch=17:22, cstar=0, col=myCol, scree.pca=TRUE,
 posi.pca="topright")
-dev.off()
+#dev.off()
 ```
-
+Although this shows are east and west pops pretty close together, they're still split by the vert axis, so I don't hate it. 
 
 ```{r}
 assignplot(dapc3)
