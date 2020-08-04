@@ -11,9 +11,9 @@ editor_options:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+This file converts our vcf file to a genlight file for use in downstream analyses
 
-
-```{r}
+```{r library}
 library(adegenet)
 library(pegas)
 library(vcfR)
@@ -24,16 +24,16 @@ library(dartR)
 setwd("~/Documents/RStudio/Erigenia/Erigenia_Analyses/vcf_tools")
 ```
 
-```{r}
+```{r read in vcf with vcfR}
 vcf<-read.vcfR("erigeniaC_noMD_filtered.recode_14350_118.vcf")
 ```
 
 
-```{r}
+```{r convert}
 new_Erigenia_gl <- vcfR2genlight(vcf)
 ```
   
-#doing analyses
+#checking genlight
 ```{r}
 indNames(new_Erigenia_gl)
 ```
@@ -42,13 +42,29 @@ levels(pop(new_Erigenia_gl))
 ```
 need to assign pops 
 
-```{r grunwald}
+```{r}
+glSum(new_Erigenia_gl, alleleAsUnit = TRUE, useC = FALSE)
+glNA(new_Erigenia_gl, alleleAsUnit = TRUE)
+glMean(new_Erigenia_gl, alleleAsUnit = TRUE)
+glVar(new_Erigenia_gl, alleleAsUnit = TRUE)
+```
+
+```{r assigning pops}
 pop(new_Erigenia_gl) <- as.factor(c("PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","YorkFurnace","YorkFurnace","YorkFurnace","YorkFurnace","YorkFurnace","YorkFurnace","YorkFurnace","YorkFurnace","YorkFurnace","YorkFurnace","YorkFurnace","YorkFurnace","YorkFurnace","YorkFurnace","SafeHarbor","SafeHarbor","SafeHarbor","SafeHarbor","SafeHarbor","SafeHarbor","SafeHarbor","SafeHarbor","SafeHarbor","RaccoonCreek","RaccoonCreek","RaccoonCreek","RaccoonCreek","RaccoonCreek","RaccoonCreek","RaccoonCreek","RaccoonCreek","RaccoonCreek","RaccoonCreek","RaccoonCreek","RaccoonCreek","RaccoonCreek","RaccoonCreek","RaccoonCreek","CedarCreek","CedarCreek","CedarCreek","CedarCreek","CedarCreek","CedarCreek","CedarCreek","CedarCreek","CedarCreek","CedarCreek","CedarCreek","CedarCreek","CedarCreek","CedarCreek","CedarCreek","BraddockTrail","BraddockTrail","BraddockTrail","BraddockTrail","BraddockTrail","BraddockTrail","BraddockTrail","BraddockTrail","BraddockTrail","BraddockTrail","BraddockTrail","BraddockTrail","BraddockTrail","BraddockTrail","BraddockTrail","RyersonStation","RyersonStation","RyersonStation","RyersonStation","RyersonStation","RyersonStation","RyersonStation","RyersonStation","RyersonStation","RyersonStation","RyersonStation","RyersonStation","RyersonStation","RyersonStation","RyersonStation","SlipperyRockCreek","SlipperyRockCreek","SlipperyRockCreek","SlipperyRockCreek","SlipperyRockCreek","SlipperyRockCreek","SlipperyRockCreek","SlipperyRockCreek","SlipperyRockCreek","SlipperyRockCreek","SlipperyRockCreek","SlipperyRockCreek","SlipperyRockCreek","SlipperyRockCreek","SlipperyRockCreek"))
 popNames(new_Erigenia_gl)
 ```
 https://grunwaldlab.github.io/Population_Genetics_in_R/analysis_of_genome.html
 
-#PCA
+alternatively, we could have used code like this 
+assign pops to pop slot in genlight (would have to edit strata to remove YF2 and SH6)
+```{r}
+#pop<-Erigenia.strata_noMD$LOCATION
+```
+
+#Doing Analyses
+
+##PCA
+mostly to check the file for quality/make sure it works
 ```{r}
 pc <- gl.pcoa(new_Erigenia_gl, nfactors=5)
 ```
@@ -57,3 +73,202 @@ pc <- gl.pcoa(new_Erigenia_gl, nfactors=5)
 gl.pcoa.plot(pc, new_Erigenia_gl, labels="pop", xaxis=1, yaxis=2)
 ```
 
+##DAPC
+Helpful links: 
+https://grunwaldlab.github.io/Population_Genetics_in_R/DAPC.html
+http://adegenet.r-forge.r-project.org/files/tutorial-dapc.pdf
+ -Code to explore DAPC objects and assignments
+```{r}
+grp<-find.clusters(new_Erigenia_gl)
+```
+retained 120 PCs
+chose K=8
+```{r}
+grp
+```
+looks good, this is what we assigned
+
+```{r}
+dapc1<- dapc(new_Erigenia_gl, grp$grp)
+```
+120 pcs retained
+retained all discriminate fucntions- 8
+
+```{r}
+dapc1$assign
+```
+perfect assignemnt 
+```{r}
+dapc1$posterior
+```
+
+```{r}
+loadingplot(dapc1$var.contr)
+```
+```{r}
+summary(dapc1)
+```
+prior and post same grouping
+
+```{r}
+assignplot(dapc1)
+```
+dang, perfect high prob assignment to origional pop
+
+
+
+```{r save fig}
+myCol <- c("brown","purple","green","orange","red","blue","black","yellow")
+#pdf("DAPC.pdf", width = 4, height = 4)
+scatter(dapc1, posi.da="bottomright", bg="white",
+pch=17:22, cstar=0, col=myCol, scree.pca=TRUE,
+posi.pca="bottomleft")
+#dev.off()
+```
+Where are the individual points?
+
+
+Basic=scatter.dapc(Erigenia.dapc); Can add more arguments  to above code and change other features
+
+```{r}
+scatter(dapc1, scree.da=FALSE, bg="white", pch=20, cell=0, cstar=0, col=myCol, solid=.4,
+cex=3,clab=0, leg=TRUE, txt.leg=paste("Cluster",1:8))
+```
+
+
+Explore other PCs 
+------------- Investigating number of PCs with alpha values etc
+http://adegenet.r-forge.r-project.org/files/tutorial-dapc.pdf pg 37
+
+```{r}
+temp <- a.score(dapc1)
+names(temp)
+temp<- optim.a.score(dapc1)
+```
+num ret pcs ~12
+```{r}
+temp$pop.score
+temp$mean
+```
+
+```{r}
+Erigenia.dapc2 <- dapc(new_Erigenia_gl)
+```
+, n.pca=12, n.da=3
+
+```{r}
+temp2 <- a.score(Erigenia.dapc2)
+names(temp2)
+temp2<- optim.a.score(Erigenia.dapc2)
+```
+opt pc 10
+```{r}
+temp2$pop.score
+temp2$mean
+```
+
+
+
+```{r}
+dapc3 <- dapc(new_Erigenia_gl)
+```
+pc 10 da 3
+```{r}
+temp3 <- a.score(dapc3)
+names(temp3)
+temp3<- optim.a.score(dapc3)
+```
+opt pc 6
+```{r}
+temp3$pop.score
+temp3$mean
+```
+
+
+
+
+```{r}
+dapc4 <- dapc(new_Erigenia_gl)
+```
+pc 6 da 3
+```{r}
+temp4 <- a.score(dapc4)
+names(temp4)
+temp4<- optim.a.score(dapc4)
+```
+opt pc 5
+```{r}
+temp4$pop.score
+temp4$mean
+```
+
+
+SO I think either 10 or 6 PCs
+
+From 10
+$`10`
+    BraddockTrail        CedarCreek       PeachBottom 
+        0.8333333         0.7000000         0.4700000 
+     RaccoonCreek    RyersonStation        SafeHarbor 
+        0.8533333         0.6933333         0.7666667 
+SlipperyRockCreek       YorkFurnace 
+        0.8466667         0.7000000 
+$`6`
+    BraddockTrail        CedarCreek       PeachBottom 
+        0.7933333         0.7400000         0.6100000 
+     RaccoonCreek    RyersonStation        SafeHarbor 
+        0.8400000         0.7666667         0.9333333 
+SlipperyRockCreek       YorkFurnace 
+        0.6133333         0.8714286
+
+From 6
+$`6`
+    BraddockTrail        CedarCreek       PeachBottom 
+        0.7666667         0.7466667         0.4950000 
+     RaccoonCreek    RyersonStation        SafeHarbor 
+        0.7533333         0.7600000         0.9000000 
+SlipperyRockCreek       YorkFurnace 
+        0.7866667         0.8928571  
+        
+STOP        
+```{r}
+Erigenia.dapc_newPCs <- dapc(new_radiator_genlight_noMD, n.pca=5, n.da=2)
+
+```
+```{r}
+Erigenia.dapc_newPCs$posterior
+```
+
+```{r}
+loadingplot(Erigenia.dapc_newPCs$var.contr)
+```
+```{r}
+summary(Erigenia.dapc_newPCs)
+```
+
+```{r}
+scatter(dapc3, scree.da=FALSE, bg="white", pch=20, cell=0, cstar=0, col=myCol, solid=.4,
+cex=3,clab=0, leg=TRUE, txt.leg=paste("Cluster",1:8))
+```
+
+```{r save fig}
+myCol <- c("burlywood4","darkviolet","green","orange","red","dodgerblue3","black","gold2")
+pdf("DAPC.pdf", width = 6, height = 4)
+scatter(Erigenia.dapc_newPCs, posi.da="bottomright", bg="white",
+pch=17:22, cstar=0, col=myCol, scree.pca=TRUE,
+posi.pca="topright")
+dev.off()
+```
+
+
+```{r}
+assignplot(dapc3)
+assignplot(dapc4)
+```
+3 is better so I think PC=10 is best
+
+#STRUCTURE-like plot- not super effective could  come back to
+```{r DAPC structure plot}
+compoplot(dapc3,col = myCol, posi = 'bottom')
+```
+FUN
