@@ -63,15 +63,7 @@ assign pops to pop slot in genlight (would have to edit strata to remove YF2 and
 
 #Doing Analyses
 
-##PCA
-mostly to check the file for quality/make sure it works
-```{r}
-pc <- gl.pcoa(new_Erigenia_gl, nfactors=5)
-```
 
-```{r}
-gl.pcoa.plot(pc, new_Erigenia_gl, labels="pop", xaxis=1, yaxis=2)
-```
 
 ##DAPC
 Helpful links: 
@@ -79,10 +71,12 @@ https://grunwaldlab.github.io/Population_Genetics_in_R/DAPC.html
 http://adegenet.r-forge.r-project.org/files/tutorial-dapc.pdf
  -Code to explore DAPC objects and assignments
 ```{r}
-grp<-find.clusters(new_Erigenia_gl)
+grp<-find.clusters(new_Erigenia_gl, max.n.clust=8, n.iter= 100)
 ```
 retained 120 PCs
-chose K=8
+chose K=8 first time, second run 6 retained based on BIC (lumps RCSPWR and BTP/ YF and SH)
+Decided to do 8 because of labeling and downstream clarity
+
 ```{r}
 grp
 ```
@@ -92,7 +86,11 @@ looks good, this is what we assigned
 dapc1<- dapc(new_Erigenia_gl, grp$grp)
 ```
 120 pcs retained
-retained all discriminate fucntions- 8
+retained all discriminate fucntions- 8 
+
+```{r}
+save(dapc1, file="dapc1.RData")
+```
 
 ```{r}
 dapc1$assign
@@ -118,7 +116,7 @@ dang, perfect high prob assignment to origional pop
 
 
 ```{r save fig}
-myCol <- c("brown","purple","green","orange","red","blue","black","yellow")
+myCol <- c("burlywood4","darkviolet","green","orange","red","dodgerblue3","black","gold2")
 #pdf("DAPC.pdf", width = 4, height = 4)
 scatter(dapc1, posi.da="bottomright", bg="white",
 pch=17:22, cstar=0, col=myCol, scree.pca=TRUE,
@@ -136,6 +134,10 @@ cex=3,clab=0, leg=TRUE, txt.leg=paste("Cluster",1:8))
 ```
 
 
+```{r}
+scatter(dapc1, col=myCol, scree.da=FALSE,
+cell=1.5, cex=2, bg="white",cstar=0)
+```
 
 
 
@@ -155,14 +157,14 @@ temp$mean
 ```
 
 ```{r}
-Erigenia.dapc2 <- dapc(new_Erigenia_gl)
+dapc2 <- dapc(new_Erigenia_gl)
 ```
 , n.pca=12, n.da=3
 
 ```{r}
-temp2 <- a.score(Erigenia.dapc2)
+temp2 <- a.score(dapc2)
 names(temp2)
-temp2<- optim.a.score(Erigenia.dapc2)
+temp2<- optim.a.score(dapc2)
 ```
 opt pc 10
 ```{r}
@@ -206,59 +208,46 @@ temp4$mean
 ```
 
 
-SO I think either 10 or 6 PCs
 
-From 10
-$`10`
-    BraddockTrail        CedarCreek       PeachBottom 
-        0.8333333         0.7000000         0.4700000 
-     RaccoonCreek    RyersonStation        SafeHarbor 
-        0.8533333         0.6933333         0.7666667 
-SlipperyRockCreek       YorkFurnace 
-        0.8466667         0.7000000 
-$`6`
-    BraddockTrail        CedarCreek       PeachBottom 
-        0.7933333         0.7400000         0.6100000 
-     RaccoonCreek    RyersonStation        SafeHarbor 
-        0.8400000         0.7666667         0.9333333 
-SlipperyRockCreek       YorkFurnace 
-        0.6133333         0.8714286
-
-From 6
-$`6`
-    BraddockTrail        CedarCreek       PeachBottom 
-        0.7666667         0.7466667         0.4950000 
-     RaccoonCreek    RyersonStation        SafeHarbor 
-        0.7533333         0.7600000         0.9000000 
-SlipperyRockCreek       YorkFurnace 
-        0.7866667         0.8928571  
-        
-STOP        
-```{r}
-Erigenia.dapc_newPCs <- dapc(new_radiator_genlight_noMD, n.pca=5, n.da=2)
-
-```
-```{r}
-Erigenia.dapc_newPCs$posterior
-```
 
 ```{r}
-loadingplot(Erigenia.dapc_newPCs$var.contr)
+loadingplot(dapc3$var.contr)
 ```
 ```{r}
-summary(Erigenia.dapc_newPCs)
+summary(dapc3)
 ```
+$assign.per.pop
+    BraddockTrail        CedarCreek       PeachBottom      RaccoonCreek    RyersonStation 
+                1                 1                 1                 1                 1 
+       SafeHarbor SlipperyRockCreek       YorkFurnace 
+                1                 1                 1 
+
+$prior.grp.size
+
+    BraddockTrail        CedarCreek       PeachBottom      RaccoonCreek    RyersonStation 
+               15                15                20                15                15 
+       SafeHarbor SlipperyRockCreek       YorkFurnace 
+                9                15                14 
+
+$post.grp.size
+
+    BraddockTrail        CedarCreek       PeachBottom      RaccoonCreek    RyersonStation 
+               15                15                20                15                15 
+       SafeHarbor SlipperyRockCreek       YorkFurnace 
+                9                15                14 
+
+
 
 ```{r}
 scatter(dapc3, scree.da=FALSE, bg="white", pch=20, cell=0, cstar=0, col=myCol, solid=.4,
 cex=3,clab=0, leg=TRUE, txt.leg=paste("Cluster",1:8))
 ```
 
-```{r save fig}
+```{r good fig}
 myCol <- c("burlywood4","darkviolet","green","orange","red","dodgerblue3","black","gold2")
 #pdf("DAPC.pdf", width = 6, height = 4)
-scatter(dapc3, posi.da="bottomright", bg="white",
-pch=17:22, cstar=0, col=myCol, scree.pca=TRUE,
+scatter(dapc3, posi.da="topleft", bg="white",
+pch=17:20, cex= 2, cstar=0, col=myCol, scree.pca=TRUE,
 posi.pca="topright")
 #dev.off()
 ```
@@ -266,9 +255,24 @@ Although this shows are east and west pops pretty close together, they're still 
 
 ```{r}
 assignplot(dapc3)
-assignplot(dapc4)
+
 ```
 3 is better so I think PC=10 is best
+
+```{r}
+save(dapc3, file="dapc3.RData")
+```
+
+```{r}
+dapc3$assign
+```
+```{r}
+dapc3$posterior
+```
+```{r}
+loadingplot(dapc3$var.contr)
+```
+
 
 ##STRUCTURE-like plot- not super effective could  come back to
 ```{r DAPC structure plot}
@@ -277,4 +281,83 @@ compoplot(dapc3,col = myCol, posi = 'bottom')
 FUN
 
 ##PCA 
-could make the one above better or use code in genetic diversity Rmd
+
+###PCA with dartR
+mostly to check the file for quality/make sure it works
+```{r}
+pc <- gl.pcoa(new_Erigenia_gl, nfactors=5)
+```
+
+```{r}
+gl.pcoa.plot(pc, new_Erigenia_gl, labels="pop", xaxis=1, yaxis=2)
+```
+```{r}
+gl.pcoa.plot(pc, new_Erigenia_gl, labels="pop", xaxis=2, yaxis=3)
+```
+```{r}
+gl.pcoa.plot(pc, new_Erigenia_gl, labels="pop", xaxis=1, yaxis=3)
+```
+
+
+###PCA with adegenet
+```{r} 
+erigenia.pca <- glPca(new_Erigenia_gl, nf = 3)
+barplot(100*erigenia.pca$eig/sum(erigenia.pca$eig), col = heat.colors(50), main="PCA Eigenvalues")
+title(ylab="Percent of variance\nexplained", line = 2)
+title(xlab="Eigenvalues", line = 1)
+```
+
+
+```{r saving glPCA with adegenet}
+save(erigenia.pca, file= "erigenia.pca.RData")
+```
+
+```{r glPCA with ggplot}
+erigenia.pca.scores <- as.data.frame(erigenia.pca$scores)
+erigenia.pca.scores$pop <- pop(new_Erigenia_gl)
+```
+
+
+
+```{r}
+set.seed(17)
+p_1_2 <- ggplot(erigenia.pca.scores, aes(x=PC1, y=PC2, colour=pop)) 
+p_1_2  <- p_1_2  + geom_point(size=2)
+#p_1_2  <- p_1_2  + stat_ellipse(level = 0.95, size = 1) -this doesn't work with theses points, but could be used for better clustering 
+p_1_2  <- p_1_2  + scale_color_manual(values = myCol) 
+p_1_2  <- p_1_2  + geom_hline(yintercept = 0) 
+p_1_2  <- p_1_2  + geom_vline(xintercept = 0) 
+p_1_2  <- p_1_2  + theme_bw()
+
+p_1_2
+```
+pc 1 =  24.6%
+pc 2 = 5%
+
+```{r other PCs in ggplot}
+set.seed(17)
+p_2_3 <- ggplot(erigenia.pca.scores, aes(x=PC2, y=PC3, colour=pop)) 
+p_2_3 <- p_2_3 + geom_point(size=2)
+#p_2_3 <- p_2_3 + stat_ellipse(level = 0.95, size = 1)
+p_2_3 <- p_2_3 + scale_color_manual(values = myCol) 
+p_2_3 <- p_2_3 + geom_hline(yintercept = 0) 
+p_2_3 <- p_2_3 + geom_vline(xintercept = 0) 
+p_2_3 <- p_2_3 + theme_bw()
+
+p_2_3
+```
+not enough % described in PCs (see above)
+
+```{r other PCs in ggplot 2}
+set.seed(17)
+p_1_3 <- ggplot(erigenia.pca.scores, aes(x=PC1, y=PC3, colour=pop)) 
+p_1_3 <- p_1_3 + geom_point(size=2)
+#p_1_3 <- p_1_3 + stat_ellipse(level = 0.95, size = 1)
+p_1_3 <- p_1_3 + scale_color_manual(values = myCol) 
+p_1_3 <- p_1_3 + geom_hline(yintercept = 0) 
+p_1_3 <- p_1_3 + geom_vline(xintercept = 0) 
+p_1_3 <- p_1_3 + theme_bw()
+
+p_1_3
+```
+

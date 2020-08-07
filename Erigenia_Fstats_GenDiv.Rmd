@@ -11,8 +11,35 @@ editor_options:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r library}
 
+```{r library}
+library(hierfstat)
+library(gaston)
+library(vcfR)
+library(reshape2)
+library(pegas)
+```
+
+
+```{r}
+setwd("~/Documents/RStudio/Erigenia/Erigenia_Analyses/vcf_tools")
+```
+
+```{r read in vcf with vcfR}
+vcf<-read.vcfR("erigeniaC_noMD_filtered.recode_14350_118.vcf")
+```
+
+
+#Getting data into hierfstat
+```{r vcf to genind}
+new_Erigenia_genind<- vcfR2genind(vcf)
+```
+```{r assigning pops}
+pop(new_Erigenia_genind) <- as.factor(c("PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","YorkFurnace","YorkFurnace","YorkFurnace","YorkFurnace","YorkFurnace","YorkFurnace","YorkFurnace","YorkFurnace","YorkFurnace","YorkFurnace","YorkFurnace","YorkFurnace","YorkFurnace","YorkFurnace","SafeHarbor","SafeHarbor","SafeHarbor","SafeHarbor","SafeHarbor","SafeHarbor","SafeHarbor","SafeHarbor","SafeHarbor","RaccoonCreek","RaccoonCreek","RaccoonCreek","RaccoonCreek","RaccoonCreek","RaccoonCreek","RaccoonCreek","RaccoonCreek","RaccoonCreek","RaccoonCreek","RaccoonCreek","RaccoonCreek","RaccoonCreek","RaccoonCreek","RaccoonCreek","CedarCreek","CedarCreek","CedarCreek","CedarCreek","CedarCreek","CedarCreek","CedarCreek","CedarCreek","CedarCreek","CedarCreek","CedarCreek","CedarCreek","CedarCreek","CedarCreek","CedarCreek","BraddockTrail","BraddockTrail","BraddockTrail","BraddockTrail","BraddockTrail","BraddockTrail","BraddockTrail","BraddockTrail","BraddockTrail","BraddockTrail","BraddockTrail","BraddockTrail","BraddockTrail","BraddockTrail","BraddockTrail","RyersonStation","RyersonStation","RyersonStation","RyersonStation","RyersonStation","RyersonStation","RyersonStation","RyersonStation","RyersonStation","RyersonStation","RyersonStation","RyersonStation","RyersonStation","RyersonStation","RyersonStation","SlipperyRockCreek","SlipperyRockCreek","SlipperyRockCreek","SlipperyRockCreek","SlipperyRockCreek","SlipperyRockCreek","SlipperyRockCreek","SlipperyRockCreek","SlipperyRockCreek","SlipperyRockCreek","SlipperyRockCreek","SlipperyRockCreek","SlipperyRockCreek","SlipperyRockCreek","SlipperyRockCreek"))
+popNames(new_Erigenia_genind)
+```
+```{r genind to hierfstat}
+new_Erigenia_hfstat<-genind2hierfstat(new_Erigenia_genind,pop=NULL)
 ```
 
 
@@ -32,8 +59,10 @@ can we do per pop?
 basicstat is a hierfstat function to tell you Fis etc
 edit to work with 
 https://cran.r-project.org/web/packages/hierfstat/vignettes/import.html
+
+population assignment ?
 ```{r}
-basicstat <- basic.stats(radiator_hf_a_noMD, diploid=TRUE, digits=3)
+basicstat <- basic.stats(new_Erigenia_hfstat, diploid=TRUE, digits=3)
 ```
 ```{r}
 save(basicstat, file="basicstat.RData")
@@ -45,47 +74,74 @@ names(basicstat)
 ```{r}
 overall_basic_stats <- as.data.frame(basicstat$overall)
 overall_basic_stats
+basicstat$pop
 ```
+     basicstat$overall
+Ho               0.055
+Hs               0.153
+Ht               0.317
+Dst              0.164
+Htp              0.341
+Dstp             0.188
+Fst              0.518
+Fstp             0.551
+Fis              0.639
+Dest             0.222
+
+
+These are very similar to values above from dartR
 
 get bootstrap confidence values for Fis
 ```{r}
-boot<- boot.ppfis(radiator_hf_a_noMD, nboot=1000)
-boot5<-boot.ppfis(radiator_hf_a_noMD, nboot=1000, quant=0.5)
+boot<- boot.ppfis(new_Erigenia_hfstat, nboot=1000)
+boot5<-boot.ppfis(new_Erigenia_hfstat, nboot=1000, quant=0.5)
 ```
-this takes a while (about 1 hour)
+
 
 ```{r}
 boot
 boot5
 ```
 
-
 ```{r}
-colnames(basicstat$Ho) <- pop_order_noMD
+new_Erigenia_hfstat$pop
+pop_order<- c("PeachBottom", "YorkFurnace", "SafeHarbor", "RacoonCreek", "CedarCreek", "BraddockTrail", "RyersonStation", "SlipperyRockCreek")
+colnames(basicstat$Ho) <- pop_order
+```
+```{r}
 Ho <- colMeans(basicstat$Ho,na.rm=T)
 He <- colMeans(basicstat$Hs,na.rm=T)
 Fis <- boot5$fis.ci$ll
-popgen_stats_noMD <- cbind(Ho,He,Fis,boot$fis.ci)
-popgen_stats_noMD
+new_popgen_stats <- cbind(Ho,He,Fis,boot$fis.ci)
+new_popgen_stats
 ```
+                        Ho         He    Fis     ll     hl
+PeachBottom       0.03150687 0.12559844 0.7490 0.7403 0.7576
+YorkFurnace       0.03737046 0.10250698 0.6351 0.6231 0.6469
+SafeHarbor        0.02749131 0.06226778 0.5578 0.5379 0.5757
+RacoonCreek       0.02864231 0.10787123 0.7345 0.7234 0.7461
+CedarCreek        0.05319950 0.14503398 0.6331 0.6235 0.6427
+BraddockTrail     0.09522822 0.21888139 0.5649 0.5581 0.5718
+RyersonStation    0.07985895 0.22134690 0.6393 0.6322 0.6462
+SlipperyRockCreek 0.08887310 0.23183168 0.6169 0.6094 0.6234
 
 ```{r}
-popgen_stats_noMD.csv <-write.table(popgen_stats_noMD, sep=",", dec=".", row.names=TRUE, col.names=TRUE)
+popgen_stats_noMD.csv <-write.table(new_popgen_stats, sep=",", dec=".", row.names=TRUE, col.names=TRUE)
 
-save(popgen_stats_noMD, file="popgen_stats_noMD")
+save(new_popgen_stats, file="new_popgen_stats")
 ```
 
 #Fst
 This is with hierfstat but dartR recommends a package called stampp
 
 ```{r population order for later}
-pop_order <- c("BTP","CCP","MD","PB","RCSPWR","RSSP","SH", "SRCNA", "YF")
+pop_order_old <- c("BTP","CCP","MD","PB","RCSPWR","RSSP","SH", "SRCNA", "YF")
 ```
-
+these prob need changed
 
 This takes a long time (~30 minutes)
 ```{r calculate fst}
-fst.mat<-genet.dist(radiator_hf_a, method = "WC84")
+fst.mat<-genet.dist(new_Erigenia_hfstat, method = "WC84")
 ```
 ```{r}
 gindF.fst.mat.tri <- as.matrix(fst.mat)
@@ -93,16 +149,25 @@ colnames(gindF.fst.mat.tri)<- pop_order
 rownames(gindF.fst.mat.tri)<- pop_order
 write.table(gindF.fst.mat.tri, file="ErigeniaFstWC84.pwfst", row.names=T,col.names=T)
 ```
-This is so we can arrange these east to west
+
+OLD: This is so we can arrange these east to west- may have to address this later
 ```{r}
 newmelted<-read.csv("/Volumes/Thunderbolt/Users/PostDoc/Desktop/newmelted.csv", sep=",", header=TRUE)
 ```
+
 ```{r}
-melted <- melt(newmelted, na.rm = TRUE)
+melted <- melt(gindF.fst.mat.tri, na.rm = TRUE)
 ```
+
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.0000  0.2929  0.4799  0.4436  0.6120  0.7920
+
 ```{r}
 summary(melted$value)
 ```
+  Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.0000  0.2929  0.4799  0.4436  0.6120  0.7920
+
 
 FIGURE FOR PUB
 plotting using ggplot2
@@ -112,7 +177,7 @@ library(cowplot)
 ```{r figure for fst}
 combined <- ggplot(data = melted, aes(Var2, Var1, fill = value))+ geom_tile(color = "white")+ 
   scale_fill_gradient(low = "white", high = "red", name="FST")  +
-  ggtitle(expression(atop("Pairwise FST, WC (1984), Combined", atop(italic("N = 124, L = 9,243"), ""))))+
+  ggtitle(expression(atop("Pairwise FST, WC (1984), Combined", atop(italic("N = 118"), ""))))+
   labs( x = "Sampling Site", y = "Sampling Site") + 
   theme(axis.text.x = element_text(angle = 45, vjust = 1, size = 12, hjust = 1),axis.text.y = element_text(size = 13)) + 
   coord_fixed()
@@ -125,29 +190,61 @@ check Fst_per_Silliman if you want to
 
 #Bartlett Test
 
-May run into issues with using a genlight here...
+
+```{r}
+ErigeniaHet <- summary(new_Erigenia_genind)
+ErigeniaHet
+```
+
+```{r saving het}
+save(ErigeniaHet,file="ErigeniaHet.Rdata")
+```
+
+```{r}
+names(ErigeniaHet)
+```
+
+
+
+```{r}
+#tiff(filename="Erigenia_Hob_plot.tiff", width = 4, height = 4, units = 'in', res = 300)
+plot(ErigeniaHet$Hobs, xlab="Locus number", ylab="Observed heterozygosity", main="Observed heterozygosity per locus")
+#dev.off()
+```
+
+
+```{r}
+#tiff(filename="Erigenia_Ho_He_plot.tiff", width = 4, height = 4, units = 'in', res = 300)
+plot(ErigeniaHet$Hobs, ErigeniaHet$Hexp, xlab="Observed heterozygosity", ylab="Expected heterozygosity", main="He as a function of Ho, per locus")
+#dev.off()
+```
+
+
+
 ```{r}
 bartlett.test(list(ErigeniaHet$Hexp, ErigeniaHet$Hobs))
 ```
-	Bartlett test of homogeneity of variances
-Bartlett's K-squared = 24950, df = 1, p-value < 2.2e-16
+Bartlett test of homogeneity of variances
+
+data:  list(ErigeniaHet$Hexp, ErigeniaHet$Hobs)
+Bartlett's K-squared = 7103.1, df = 1, p-value < 2.2e-16
 wow: across PA, Ho is very low, statistically significantly so.
 
 Now, separate pops and repeat Bartlett for each.
 Use seppop in adegenet to split the genind by population. use pop=NULL to let it use the pop slot in the big genind, makes a list.
 ```{r}
-temp <- seppop(Erigenia_filtered_noMD.recode.genind)
+temp_seppop <- seppop(new_Erigenia_genind)
 ```
 make individual geninds from the list
 ```{r}
-PB <- temp$PB
-BTP <- temp$BTP
-CCP <- temp$CCP
-RCSPWR <- temp$RCSPWR
-RSSP <- temp$RSSP
-SH <- temp$SH
-SRCNA <- temp$SRCNA
-YF <- temp$YF
+PB <- temp_seppop$PeachBottom
+BTP <- temp_seppop$BraddockTrail
+CCP <- temp_seppop$CedarCreek
+RCSPWR <- temp_seppop$RaccoonCreek
+RSSP <- temp_seppop$RyersonStation
+SH <- temp_seppop$SafeHarbor
+SRCNA <- temp_seppop$SlipperyRockCreek
+YF <- temp_seppop$YorkFurnace
 ```
 
 each pop can now be called! do bartletts for each.
@@ -155,47 +252,47 @@ each pop can now be called! do bartletts for each.
 PBHet <- summary(PB)
 bartlett.test(list(PBHet$Hexp, PBHet$Hobs))
 ```
-Bartlett's K-squared = 7552.4, df = 1, p-value < 2.2e-16
+Bartlett's K-squared = 8189.6, df = 1, p-value < 2.2e-16
 woo!
 
 ```{r}
 BTPHet <- summary(BTP)
 bartlett.test(list(BTPHet$Hexp, BTPHet$Hobs))
 ```
-Bartlett's K-squared = 5504, df = 1, p-value < 2.2e-16
+Bartlett's K-squared = 2720.5, df = 1, p-value < 2.2e-16
 
 ```{r}
 CCPHet <- summary(CCP)
 bartlett.test(list(CCPHet$Hexp, CCPHet$Hobs))
 ```
-Bartlett's K-squared = 7075.6, df = 1, p-value < 2.2e-16
+Bartlett's K-squared = 4495.7, df = 1, p-value < 2.2e-16
 
 ```{r}
 RCSPWRHet <- summary(RCSPWR)
 bartlett.test(list(RCSPWRHet$Hexp, RCSPWRHet$Hobs))
 ```
-Bartlett's K-squared = 6327.5, df = 1, p-value < 2.2e-16
+Bartlett's K-squared = 6815.9, df = 1, p-value < 2.2e-16
 
 ```{r}
 RSSPHet <- summary(RSSP)
 bartlett.test(list(RSSPHet$Hexp, RSSPHet$Hobs))
 ```
-Bartlett's K-squared = 4835.7, df = 1, p-value < 2.2e-16
+Bartlett's K-squared = 3416.9, df = 1, p-value < 2.2e-16
 
 ```{r}
 SHHet <- summary(SH)
 bartlett.test(list(SHHet$Hexp, SHHet$Hobs))
 ```
-Bartlett's K-squared = 1318.8, df = 1, p-value < 2.2e-16
+Bartlett's K-squared = 3076.3, df = 1, p-value < 2.2e-16
 
 ```{r}
 SRCNAHet<- summary(SRCNA)
 bartlett.test(list(SRCNAHet$Hexp, SHHet$Hobs))
 ```
-Bartlett's K-squared = 11485, df = 1, p-value < 2.2e-16
+Bartlett's K-squared = 7087.1, df = 1, p-value < 2.2e-16
 
 ```{r}
 YFHet <- summary(YF)
 bartlett.test(list(YFHet$Hexp, SHHet$Hobs))
 ```
-Bartlett's K-squared = 6642.3, df = 1, p-value < 2.2e-16
+Bartlett's K-squared = 4109.2, df = 1, p-value < 2.2e-16
