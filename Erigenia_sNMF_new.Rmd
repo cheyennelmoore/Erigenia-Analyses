@@ -1,0 +1,50 @@
+---
+title: "Erigenia_sNMF"
+author: "CLM"
+date: "8/6/2020"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+#library
+```{r}
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install("LEA")
+```
+```{r}
+library(LEA)
+library(radiator)
+```
+
+#LEA sNMF
+http://membres-timc.imag.fr/Olivier.Francois/tutoRstructure.pdf
+##loading the data and finding clusters
+set working directory
+```{r}
+setwd("~/Documents/RStudio/Erigenia/Erigenia_Analyses/vcf_tools")
+```
+
+```{r}
+new_Erigenia.geno<- vcf2geno("erigeniaC_noMD_filtered.recode_14350_118.vcf")
+```
+- number of detected individuals:	118
+	- number of detected loci:		14350
+
+For SNP info, please check ./erigeniaC_noMD_filtered.recode_14350_118.vcfsnp.
+
+0 line(s) were removed because these are not SNPs.
+Please, check ./erigeniaC_noMD_filtered.recode_14350_118.removed file, for more informations
+
+```{r sNMF pops}
+erigenia_snmf = snmf("new_Erigenia.geno", K = 1:8, CPU = 4, entropy = TRUE, project = "new", iterations = 1000, repetitions = 10)
+```
+
+
