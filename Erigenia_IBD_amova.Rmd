@@ -13,99 +13,108 @@ knitr::opts_chunk$set(echo = TRUE)
 
 BELOW IS CODE FROM BAPTISIA ANALYSES WITH DARTR- edit to work for Erigenia
  
- 
+#Getting set up
+```{r library}
+library(adegenet)
+library(pegas)
+library(vcfR)
+library(dartR)
+library(poppr)
+```
+
+```{r}
+setwd("~/Documents/RStudio/Erigenia/Erigenia_Analyses/vcf_tools")
+```
+
+```{r read in vcf with vcfR}
+vcf<-read.vcfR("erigeniaC_noMD_filtered.recode_14350_118.vcf")
+```
+
+
+```{r convert}
+new_Erigenia_gl <- vcfR2genlight(vcf)
+```
+```{r assigning pops}
+pop(new_Erigenia_gl) <- as.factor(c("PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","YorkFurnace","YorkFurnace","YorkFurnace","YorkFurnace","YorkFurnace","YorkFurnace","YorkFurnace","YorkFurnace","YorkFurnace","YorkFurnace","YorkFurnace","YorkFurnace","YorkFurnace","YorkFurnace","SafeHarbor","SafeHarbor","SafeHarbor","SafeHarbor","SafeHarbor","SafeHarbor","SafeHarbor","SafeHarbor","SafeHarbor","RaccoonCreek","RaccoonCreek","RaccoonCreek","RaccoonCreek","RaccoonCreek","RaccoonCreek","RaccoonCreek","RaccoonCreek","RaccoonCreek","RaccoonCreek","RaccoonCreek","RaccoonCreek","RaccoonCreek","RaccoonCreek","RaccoonCreek","CedarCreek","CedarCreek","CedarCreek","CedarCreek","CedarCreek","CedarCreek","CedarCreek","CedarCreek","CedarCreek","CedarCreek","CedarCreek","CedarCreek","CedarCreek","CedarCreek","CedarCreek","BraddockTrail","BraddockTrail","BraddockTrail","BraddockTrail","BraddockTrail","BraddockTrail","BraddockTrail","BraddockTrail","BraddockTrail","BraddockTrail","BraddockTrail","BraddockTrail","BraddockTrail","BraddockTrail","BraddockTrail","RyersonStation","RyersonStation","RyersonStation","RyersonStation","RyersonStation","RyersonStation","RyersonStation","RyersonStation","RyersonStation","RyersonStation","RyersonStation","RyersonStation","RyersonStation","RyersonStation","RyersonStation","SlipperyRockCreek","SlipperyRockCreek","SlipperyRockCreek","SlipperyRockCreek","SlipperyRockCreek","SlipperyRockCreek","SlipperyRockCreek","SlipperyRockCreek","SlipperyRockCreek","SlipperyRockCreek","SlipperyRockCreek","SlipperyRockCreek","SlipperyRockCreek","SlipperyRockCreek","SlipperyRockCreek"))
+popNames(new_Erigenia_gl)
+```
+
 #Mantel Test 
 
 ```{r}
 coords <- read.csv ("coords.csv", header=TRUE) #for each pop
-coords_all<-read.csv("coords_all.csv", header=TRUE) #for each individual
+#coords_all<-read.csv("coords_all.csv", header=TRUE) #for each individual
 ```
 
 ```{r alternative to assigning coords_all to the gl}
-Dgen <- gl.dist.pop(Bap_allB_genlight, method="euclidean")
+Dgen <- gl.dist.pop(new_Erigenia_gl, method="euclidean")
 Dgeo <- dist(coords)
 ```
 ```{r}
 Dgen
 ```
 
-```{r}
-Bap_allB_genlight@other$latlong<-coords_all
-Bap_allB_genlight@other$latlong
-Bap_allB_genlight@pop
+```{r not running this for Erigenia}
+new_Erigenia_gl@other$latlong<-coords_all
+new_Erigenia_gl@other$latlong
+new_Erigenia_gl@pop
 ```
 
-```{r}
-Bap_ibd<- gl.ibd(gl = Bap_allB_genlight, Dgen = NULL, Dgeo = NULL, projected = TRUE,
+```{r didn't run}
+Erigenia_ibd<- gl.ibd(gl = new_Erigenia_gl, Dgen = NULL, Dgeo = NULL, projected = TRUE,
   permutations = 999, plot = TRUE)
 ```
+
+
+```{r dartR }
+Erigenia_ibd_<- gl.ibd(gl = NULL, Dgen = Dgen, Dgeo = Dgeo, projected = TRUE,
+  permutations = 999, plot = TRUE)
+```
+Erigenia_ibd_<- gl.ibd(gl = NULL, Dgen = Dgen, Dgeo = Dgeo, projected = TRUE,
++   permutations = 999, plot = TRUE)
+Analysis performed on provided genetic and Euclidean distance matrices.
+Mantel statistic based on Pearson's product-moment correlation 
+
 Call:
 mantel(xdis = Dgen, ydis = Dgeo, permutations = 999, na.rm = TRUE) 
 
-Mantel statistic r:   NaN 
-      Significance: NA 
+Mantel statistic r: 0.944 
+      Significance: 0.01 
 
 Upper quantiles of permutations (null model):
   90%   95% 97.5%   99% 
-   NA    NA    NA    NA 
-Permutation: free
-Number of permutations: 999
-
-```{r}
-Bap_ibd_<- gl.ibd(gl = NULL, Dgen = Dgen, Dgeo = Dgeo, projected = TRUE,
-  permutations = 999, plot = TRUE)
-```
-bandwidth error has to do with population, b/c multiple individuals have the same coordinates it is not happy
-
-
-```{r}
-Bap_ibd_2<- mantel.randtest(Dgen, Dgeo)
-```
-
-
-```{r}
-Bap_ibd_2
-plot(Bap_ibd_2)
-```
-
-Try it w/o Ernst
-```{r}
-Bap_ibd_noErnst<- gl.ibd(gl = Bap_allB_gl_noErnst, Dgen = NULL, Dgeo = NULL, projected = TRUE,
-  permutations = 999, plot = TRUE)
-```
-
-Heck yeah it worked!
-Mantel statistic r: 0.6112 
-      Significance: 0.001 
-
-Upper quantiles of permutations (null model):
-  90%   95% 97.5%   99% 
-0.173 0.280 0.425 0.457 
-Permutation: free
-Number of permutations: 999
-```{r}
-Bap_ibd_noErnst
-```
-
-```{r}
-Bap_ibd_Allegheny<- gl.ibd(gl = Bap_allB_gl_Allegheny, Dgen = NULL, Dgeo = NULL, projected = TRUE,
-  permutations = 999, plot = TRUE)
-
-```
-Mantel statistic r: 0.5922 
-      Significance: 0.001 
-
-Upper quantiles of permutations (null model):
-  90%   95% 97.5%   99% 
-0.166 0.197 0.232 0.266 
+0.171 0.229 0.267 0.934 
 Permutation: free
 Number of permutations: 999
 
 
-What does this mean? http://qiime.org/1.5.0/tutorials/distance_matrix_comparison.html
+
+```{r ade package}
+Erigenia_ibd_2<- mantel.randtest(Dgen, Dgeo)
+```
+
+
+```{r}
+Erigenia_ibd_2
+plot(Erigenia_ibd_2)
+```
+Monte-Carlo test
+Call: mantel.randtest(m1 = Dgen, m2 = Dgeo)
+
+Observation: 0.944004 
+
+Based on 999 replicates
+Simulated p-value: 0.019 
+Alternative hypothesis: greater 
+
+    Std.Obs Expectation    Variance 
+4.532095254 0.001750734 0.043225223
+
+
+
 
 #AMOVA
-
+##dartR
 https://grunwaldlab.github.io/Population_Genetics_in_R/AMOVA.html
 https://grunwaldlab.github.io/poppr/reference/poppr.amova.html
 https://rdrr.io/cran/dartR/man/gl.amova.html
@@ -140,3 +149,48 @@ Variance coefficients:
 14.67554 
 
 Idk what this mean, will have to look into output
+
+```{r}
+plot(Erigenia_amova)
+```
+
+##poppr
+```{r assigning strata}
+Erigenia_strata<- read.table("AUG_erigenia.strata.strata_noMD_noYF2", sep= "\t", header= TRUE)
+Erigenia_strata
+```
+
+```{r}
+
+strata(new_Erigenia_gl) <- Erigenia_strata
+new_Erigenia_gl$strata
+```
+
+```{r}
+poppr_Erigenia_amova<- poppr.amova(new_Erigenia_gl, hier= ~LOCATION)
+```
+```{r}
+poppr_Erigenia_amova
+```
+ade4::amova(samples = xtab, distances = xdist, structures = xstruct)
+
+$results
+                                 Df    Sum Sq    Mean Sq
+Between LOCATION                  7 283752.36 40536.0516
+Between samples Within LOCATION 110 204550.82  1859.5529
+Within samples                  118  47402.94   401.7198
+Total                           235 535706.12  2279.6005
+
+$componentsofcovariance
+                                                Sigma         %
+Variations  Between LOCATION                1317.7194  53.82058
+Variations  Between samples Within LOCATION  728.9165  29.77168
+Variations  Within samples                   401.7198  16.40774
+Total variations                            2448.3557 100.00000
+
+$statphi
+                           Phi
+Phi-samples-total    0.8359226
+Phi-samples-LOCATION 0.6446958
+Phi-LOCATION-total   0.5382058
+
