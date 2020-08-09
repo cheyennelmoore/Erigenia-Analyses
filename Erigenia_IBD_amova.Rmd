@@ -194,3 +194,33 @@ Phi-samples-total    0.8359226
 Phi-samples-LOCATION 0.6446958
 Phi-LOCATION-total   0.5382058
 
+###East West Comparison
+```{r}
+poppr_Erigenia_amova_EW<- poppr.amova(new_Erigenia_gl, hier= ~REGION)
+```
+```{r}
+poppr_Erigenia_amova_EW
+```
+
+$call
+ade4::amova(samples = xtab, distances = xdist, structures = xstruct)
+
+$results
+                               Df    Sum Sq     Mean Sq
+Between REGION                  1 171200.77 171200.7694
+Between samples Within REGION 116 317102.41   2733.6415
+Within samples                118  47402.94    401.7198
+Total                         235 535706.12   2279.6005
+
+$componentsofcovariance
+                                              Sigma         %
+Variations  Between REGION                1541.0171  49.57115
+Variations  Between samples Within REGION 1165.9608  37.50641
+Variations  Within samples                 401.7198  12.92245
+Total variations                          3108.6978 100.00000
+
+$statphi
+                         Phi
+Phi-samples-total  0.8707755
+Phi-samples-REGION 0.7437489
+Phi-REGION-total   0.4957115

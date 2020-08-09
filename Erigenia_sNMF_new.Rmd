@@ -1,6 +1,6 @@
 ---
 title: "Erigenia_sNMF"
-author: "CLM"
+author: "AJM"
 date: "8/6/2020"
 output: html_document
 editor_options: 
@@ -11,6 +11,7 @@ editor_options:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+*note this code was run on Angela's computer
 
 #library
 ```{r}
@@ -22,6 +23,7 @@ BiocManager::install("LEA")
 ```{r}
 library(LEA)
 library(radiator)
+library(vcfR)
 ```
 
 #LEA sNMF
@@ -36,15 +38,89 @@ setwd("~/Documents/RStudio/Erigenia/Erigenia_Analyses/vcf_tools")
 new_Erigenia.geno<- vcf2geno("erigeniaC_noMD_filtered.recode_14350_118.vcf")
 ```
 - number of detected individuals:	118
-	- number of detected loci:		14350
+- number of detected loci:		14350
 
 For SNP info, please check ./erigeniaC_noMD_filtered.recode_14350_118.vcfsnp.
 
 0 line(s) were removed because these are not SNPs.
 Please, check ./erigeniaC_noMD_filtered.recode_14350_118.removed file, for more informations
+```{r}
+genotype=new_Erigenia.geno
+```
 
-```{r sNMF pops}
-erigenia_snmf = snmf("new_Erigenia.geno", K = 1:8, CPU = 4, entropy = TRUE, project = "new", iterations = 1000, repetitions = 10)
+{r sNMF pops}
+```{r}
+erigenia_snmf = snmf(genotype, K = 1:8, entropy = T, ploidy=2, project = "new")
 ```
 
 
+```{r}
+erigenia_snmf_reps = snmf(genotype, K = 1:8, CPU = 4, entropy = T, ploidy=2, project = "new", iterations = 1000, repetitions = 10)
+```
+Cross-Entropy (all data):	 0.3733
+Cross-Entropy (masked data):	 0.488522
+The project is saved into :
+ erigeniaC_noMD_filtered.recode_14350_118.snmfProject 
+
+To load the project, use:
+ project = load.snmfProject("erigeniaC_noMD_filtered.recode_14350_118.snmfProject")
+
+To remove the project, use:
+ remove.snmfProject("erigeniaC_noMD_filtered.recode_14350_118.snmfProject")
+
+
+```{r}
+plot(erigenia_snmf_reps)
+```
+7 and 8 look close, 8 lower?
+
+
+
+```{r}
+best8 = which.min(cross.entropy(erigenia_snmf_reps, K = 8))
+my.colors <- c("dodgerblue3","green","burlywood4","orange","yellow","darkviolet","black","tomato")
+#pdf("snmf_plot_8pop.pdf", width = 6, height = 3.5)
+barchart(erigenia_snmf_reps, K = 8, run = best8,
+border = NA, space = 0,
+col = my.colors,
+xlab = "Individuals",
+ylab = "Ancestry proportions",
+main = "Ancestry matrix") ->bp1
+axis(1, at = 1:length(bp1$order),
+labels = bp1$order, las=1,
+cex.axis = .3)
+#dev.off()
+```
+
+```{r}
+best7 = which.min(cross.entropy(erigenia_snmf_reps, K = 7))
+my.colors <- c("darkviolet","dodgerblue3","black","green","burlywood4","orange","yellow")
+barchart(erigenia_snmf_reps, K = 7, run = best7,
+border = NA, space = 0,
+col = my.colors,
+xlab = "Individuals",
+ylab = "Ancestry proportions",
+main = "Ancestry matrix") ->bp1
+axis(1, at = 1:length(bp1$order),
+labels = bp1$order, las=1,
+cex.axis = .3)
+
+```
+
+also look at k=2 for E/W disjunction evidence?
+```{r}
+best2 = which.min(cross.entropy(erigenia_snmf_reps, K = 2))
+my.colors <- c("orange","dodgerblue3")
+barchart(erigenia_snmf_reps, K = 2, run = best2,
+border = NA, space = 0,
+col = my.colors,
+xlab = "Individuals",
+ylab = "Ancestry proportions",
+main = "Ancestry matrix") ->bp1
+axis(1, at = 1:length(bp1$order),
+labels = bp1$order, las=1,
+cex.axis = .3)
+
+```
+
+pops are in what order? numbers follow the numbers in your vcf. need to compare numbers and edit colors as necessary to match dapc (or whatever other figs you're makin)
