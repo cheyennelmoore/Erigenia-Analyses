@@ -1,6 +1,6 @@
 # Erigenia bulbosa conservation genetics repo
 
-This repository contains analyses of SNP data for Erigenia bulbosa in PA. The following files are included
+This repository contains analyses of SNP data for Erigenia bulbosa in PA. The following files are included:
 
 ## vcf_code.txt
 Contains our [vcf filtering](vcf_code.txt) code from command line. We used vcf tools and utilized information in this [tutorial](https://speciationgenomics.github.io/filtering_vcfs/).
@@ -23,7 +23,7 @@ For IBD we used dartR and adegenet. For AMOVA we used dartR and poppr. This Rmd 
 Analysis similar to STRUCTURE called [sMNF in package LEA](Erigenia_sMNF_new.Rmd). It should be noted that this analysis takes a bit of computing power and may crash R. 
 For this analysis ywe also convert our vcf to a .geno file. 
 
-# Old Files
+## Old Files
 Old files is a folder of old Rmds containing largely the same analyses but with more lax filtering. The code is also a bit messier. 
 
 
