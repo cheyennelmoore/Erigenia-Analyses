@@ -1,6 +1,7 @@
-# *Erigenia bulbosa* conservation genetics repo
+# *Erigenia bulbosa* conservation genomics repo
 
 This repository contains analyses of SNP data for *Erigenia bulbosa* in Pennsylvania, USA. The following files are included:
+
 *hyperlinks take you to Rmds
 
 ## vcf_code.txt
