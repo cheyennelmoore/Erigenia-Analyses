@@ -40,7 +40,6 @@ indNames(new_Erigenia_gl)
 ```{r}
 levels(pop(new_Erigenia_gl))
 ```
-need to assign pops 
 
 ```{r}
 glSum(new_Erigenia_gl, alleleAsUnit = TRUE, useC = FALSE)
@@ -48,6 +47,8 @@ glNA(new_Erigenia_gl, alleleAsUnit = TRUE)
 glMean(new_Erigenia_gl, alleleAsUnit = TRUE)
 glVar(new_Erigenia_gl, alleleAsUnit = TRUE)
 ```
+need to assign pops 
+
 
 ```{r assigning pops}
 pop(new_Erigenia_gl) <- as.factor(c("PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","PeachBottom","YorkFurnace","YorkFurnace","YorkFurnace","YorkFurnace","YorkFurnace","YorkFurnace","YorkFurnace","YorkFurnace","YorkFurnace","YorkFurnace","YorkFurnace","YorkFurnace","YorkFurnace","YorkFurnace","SafeHarbor","SafeHarbor","SafeHarbor","SafeHarbor","SafeHarbor","SafeHarbor","SafeHarbor","SafeHarbor","SafeHarbor","RaccoonCreek","RaccoonCreek","RaccoonCreek","RaccoonCreek","RaccoonCreek","RaccoonCreek","RaccoonCreek","RaccoonCreek","RaccoonCreek","RaccoonCreek","RaccoonCreek","RaccoonCreek","RaccoonCreek","RaccoonCreek","RaccoonCreek","CedarCreek","CedarCreek","CedarCreek","CedarCreek","CedarCreek","CedarCreek","CedarCreek","CedarCreek","CedarCreek","CedarCreek","CedarCreek","CedarCreek","CedarCreek","CedarCreek","CedarCreek","BraddockTrail","BraddockTrail","BraddockTrail","BraddockTrail","BraddockTrail","BraddockTrail","BraddockTrail","BraddockTrail","BraddockTrail","BraddockTrail","BraddockTrail","BraddockTrail","BraddockTrail","BraddockTrail","BraddockTrail","RyersonStation","RyersonStation","RyersonStation","RyersonStation","RyersonStation","RyersonStation","RyersonStation","RyersonStation","RyersonStation","RyersonStation","RyersonStation","RyersonStation","RyersonStation","RyersonStation","RyersonStation","SlipperyRockCreek","SlipperyRockCreek","SlipperyRockCreek","SlipperyRockCreek","SlipperyRockCreek","SlipperyRockCreek","SlipperyRockCreek","SlipperyRockCreek","SlipperyRockCreek","SlipperyRockCreek","SlipperyRockCreek","SlipperyRockCreek","SlipperyRockCreek","SlipperyRockCreek","SlipperyRockCreek"))
@@ -56,14 +57,12 @@ popNames(new_Erigenia_gl)
 https://grunwaldlab.github.io/Population_Genetics_in_R/analysis_of_genome.html
 
 alternatively, we could have used code like this 
-assign pops to pop slot in genlight (would have to edit strata to remove YF2 and SH6)
+assign pops to pop slot in genlight 
 ```{r}
 #pop<-Erigenia.strata_noMD$LOCATION
 ```
 
 #Doing Analyses
-
-
 
 ##DAPC
 Helpful links: 
@@ -141,7 +140,7 @@ cell=1.5, cex=2, bg="white",cstar=0)
 
 
 
-Explore other PCs 
+Explore other PCs and optimize
 ------------- Investigating number of PCs with alpha values etc
 http://adegenet.r-forge.r-project.org/files/tutorial-dapc.pdf pg 37
 
@@ -150,7 +149,7 @@ temp <- a.score(dapc1)
 names(temp)
 temp<- optim.a.score(dapc1)
 ```
-num ret pcs ~12
+number retained pcs ~12
 ```{r}
 temp$pop.score
 temp$mean
@@ -159,14 +158,14 @@ temp$mean
 ```{r}
 dapc2 <- dapc(new_Erigenia_gl)
 ```
-, n.pca=12, n.da=3
+n.pca=12, n.da=3 
 
 ```{r}
 temp2 <- a.score(dapc2)
 names(temp2)
 temp2<- optim.a.score(dapc2)
 ```
-opt pc 10
+optimun retained number of pcs 10
 ```{r}
 temp2$pop.score
 temp2$mean
@@ -177,13 +176,13 @@ temp2$mean
 ```{r}
 dapc3 <- dapc(new_Erigenia_gl)
 ```
-pc 10 da 3
+n.pca= 10, n.da= 3
 ```{r}
 temp3 <- a.score(dapc3)
 names(temp3)
 temp3<- optim.a.score(dapc3)
 ```
-opt pc 6
+optimum ertained number of  pcs 6
 ```{r}
 temp3$pop.score
 temp3$mean
@@ -195,19 +194,19 @@ temp3$mean
 ```{r}
 dapc4 <- dapc(new_Erigenia_gl)
 ```
-pc 6 da 3
+n.pc=6, n.da=3
 ```{r}
 temp4 <- a.score(dapc4)
 names(temp4)
 temp4<- optim.a.score(dapc4)
 ```
-opt pc 5
+optimum number retained pcs 5
 ```{r}
 temp4$pop.score
 temp4$mean
 ```
 
-
+We chose dapc3 as the best, due to the fact PC choice levels off at 10 and doesn't change much when you go lower, more PCs (10 vs 5 or 6) will provide more useful data and better inform the plot
 
 
 ```{r}
@@ -278,7 +277,7 @@ loadingplot(dapc3$var.contr)
 ```{r DAPC structure plot}
 compoplot(dapc3,col = myCol, posi = 'bottom')
 ```
-FUN
+FUN!
 
 ##PCA 
 

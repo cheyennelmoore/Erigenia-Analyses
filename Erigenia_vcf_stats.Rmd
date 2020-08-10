@@ -25,7 +25,7 @@ library(tidyverse)
 setwd("~/Documents/RStudio/Erigenia/Erigenia_Analyses/vcf_tools/14350_output")
 ```
 
-```{r}
+```{r quality}
 var_qual <- read_delim("./qual_site_out.lqual", delim = "\t",
            col_names = c("chr", "pos", "qual"), skip = 1)
 ```
@@ -35,10 +35,10 @@ a + theme_light()
 a + ylim(0, 20000)
 a + xlim(0, 20)
 ```
-we don't need this- all 13 qual
+we don't need this- all 13 qual from ipyrad output
 
 
-```{r}
+```{r read depth per site}
 var_depth <- read_delim("./depth_site_out.ldepth.mean", delim = "\t",
            col_names = c("chr", "pos", "mean_depth", "var_depth"), skip = 1)
 ```
@@ -54,7 +54,7 @@ summary(var_depth$mean_depth)
   8.246  14.508  17.627  18.870  21.169 969.576 
 
 
-```{r}
+```{r missing per site}
 var_miss <- read_delim("./missing_site_out.lmiss", delim = "\t",
                        col_names = c("chr", "pos", "nchr", "nfiltered", "nmiss", "fmiss"), skip = 1)
 ```
@@ -71,7 +71,7 @@ Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
  
 
 
-```{r}
+```{r allele frequency}
 var_freq <- read_delim("./all_freq_out.frq", delim = "\t",
                        col_names = c("chr", "pos", "nalleles", "nchr", "a1", "a2"), skip = 1)
 ```
@@ -91,7 +91,7 @@ summary(var_freq$maf)
 0.03846 0.09659 0.20422 0.22952 0.35227 0.50000
 
 
-```{r}
+```{r read depth per individual}
 ind_depth <- read_delim("./depth_indiv_out.idepth", delim = "\t",
                         col_names = c("ind", "nsites", "depth"), skip = 1)
 ```
@@ -101,7 +101,7 @@ a + theme_light()
 ```
 
 
-```{r}
+```{r missing per individual}
 ind_miss  <- read_delim("./missing_indiv_out.imiss", delim = "\t",
                         col_names = c("ind", "ndata", "nfiltered", "nmiss", "fmiss"), skip = 1)
 ```
@@ -111,7 +111,7 @@ a + theme_light()
 ```
 
 
-```{r}
+```{r heterozygosity and inbreeding coefficient}
 ind_het <- read_delim("./het_out.het", delim = "\t",
            col_names = c("ind","ho", "he", "nsites", "f"), skip = 1)
 ```

@@ -18,6 +18,7 @@ library(gaston)
 library(vcfR)
 library(reshape2)
 library(pegas)
+library(cowplot)
 ```
 
 
@@ -60,7 +61,6 @@ basicstat is a hierfstat function to tell you Fis etc
 edit to work with 
 https://cran.r-project.org/web/packages/hierfstat/vignettes/import.html
 
-population assignment ?
 ```{r}
 basicstat <- basic.stats(new_Erigenia_hfstat, diploid=TRUE, digits=3)
 ```
@@ -132,12 +132,8 @@ save(new_popgen_stats, file="new_popgen_stats")
 ```
 
 #Fst
-This is with hierfstat but dartR recommends a package called stampp
+This is with hierfstat but dartR suggests a package called stampp if you want to double check
 
-```{r population order for later}
-pop_order_old <- c("BTP","CCP","MD","PB","RCSPWR","RSSP","SH", "SRCNA", "YF")
-```
-these prob need changed
 
 This takes a long time (~30 minutes)
 ```{r calculate fst}
@@ -150,10 +146,6 @@ rownames(gindF.fst.mat.tri)<- pop_order
 write.table(gindF.fst.mat.tri, file="ErigeniaFstWC84.pwfst", row.names=T,col.names=T)
 ```
 
-OLD: This is so we can arrange these east to west- may have to address this later
-```{r}
-newmelted<-read.csv("/Volumes/Thunderbolt/Users/PostDoc/Desktop/newmelted.csv", sep=",", header=TRUE)
-```
 
 ```{r}
 melted <- melt(gindF.fst.mat.tri, na.rm = TRUE)
@@ -171,9 +163,7 @@ summary(melted$value)
 
 FIGURE FOR PUB
 plotting using ggplot2
-```{r}
-library(cowplot)
-```
+
 ```{r figure for fst}
 combined <- ggplot(data = melted, aes(Var2, Var1, fill = value))+ geom_tile(color = "white")+ 
   scale_fill_gradient(low = "white", high = "red", name="FST")  +
@@ -205,13 +195,12 @@ names(ErigeniaHet)
 ```
 
 
-
+supplemental figures
 ```{r}
 #tiff(filename="Erigenia_Hob_plot.tiff", width = 4, height = 4, units = 'in', res = 300)
 plot(ErigeniaHet$Hobs, xlab="Locus number", ylab="Observed heterozygosity", main="Observed heterozygosity per locus")
 #dev.off()
 ```
-
 
 ```{r}
 #tiff(filename="Erigenia_Ho_He_plot.tiff", width = 4, height = 4, units = 'in', res = 300)
@@ -219,7 +208,7 @@ plot(ErigeniaHet$Hobs, ErigeniaHet$Hexp, xlab="Observed heterozygosity", ylab="E
 #dev.off()
 ```
 
-
+#Barlett Test
 
 ```{r}
 bartlett.test(list(ErigeniaHet$Hexp, ErigeniaHet$Hobs))

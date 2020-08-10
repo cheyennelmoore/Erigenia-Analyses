@@ -11,7 +11,7 @@ editor_options:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-*note this code was run on Angela's computer
+*note this code was run on Angela's computer- requires computer with good computing capabilities- crashed CLM's R session several times
 
 #library
 ```{r}
@@ -72,7 +72,7 @@ To remove the project, use:
 ```{r}
 plot(erigenia_snmf_reps)
 ```
-7 and 8 look close, 8 lower?
+7 and 8 look close, 8 lower in fig that helps us choose K whcih means better choice, 7 is second lowest
 
 
 
@@ -104,8 +104,9 @@ main = "Ancestry matrix") ->bp1
 axis(1, at = 1:length(bp1$order),
 labels = bp1$order, las=1,
 cex.axis = .3)
-
 ```
+RSSP is absorbed into another western pop
+
 
 also look at k=2 for E/W disjunction evidence?
 ```{r}
@@ -120,7 +121,9 @@ main = "Ancestry matrix") ->bp1
 axis(1, at = 1:length(bp1$order),
 labels = bp1$order, las=1,
 cex.axis = .3)
-
 ```
+there is support for this (clear E/W divide), but k=2 not well supported early on (see: plot(erigenia_snmf_reps))
 
 pops are in what order? numbers follow the numbers in your vcf. need to compare numbers and edit colors as necessary to match dapc (or whatever other figs you're makin)
+
+will have to make plot, figure out order of pops/indivs then change order of colors

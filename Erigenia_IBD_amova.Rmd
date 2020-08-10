@@ -11,7 +11,6 @@ editor_options:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-BELOW IS CODE FROM BAPTISIA ANALYSES WITH DARTR- edit to work for Erigenia
  
 #Getting set up
 ```{r library}
@@ -41,10 +40,14 @@ popNames(new_Erigenia_gl)
 
 #Mantel Test 
 
+
+Need coordinates to do a mantel test
 ```{r}
 coords <- read.csv ("coords.csv", header=TRUE) #for each pop
 #coords_all<-read.csv("coords_all.csv", header=TRUE) #for each individual
 ```
+
+#dartR package
 
 ```{r alternative to assigning coords_all to the gl}
 Dgen <- gl.dist.pop(new_Erigenia_gl, method="euclidean")
@@ -54,19 +57,8 @@ Dgeo <- dist(coords)
 Dgen
 ```
 
-```{r not running this for Erigenia}
-new_Erigenia_gl@other$latlong<-coords_all
-new_Erigenia_gl@other$latlong
-new_Erigenia_gl@pop
-```
 
-```{r didn't run}
-Erigenia_ibd<- gl.ibd(gl = new_Erigenia_gl, Dgen = NULL, Dgeo = NULL, projected = TRUE,
-  permutations = 999, plot = TRUE)
-```
-
-
-```{r dartR }
+```{r dartR mantel test}
 Erigenia_ibd_<- gl.ibd(gl = NULL, Dgen = Dgen, Dgeo = Dgeo, projected = TRUE,
   permutations = 999, plot = TRUE)
 ```
@@ -88,8 +80,9 @@ Permutation: free
 Number of permutations: 999
 
 
+## ade package
 
-```{r ade package}
+```{r ade package mantel test}
 Erigenia_ibd_2<- mantel.randtest(Dgen, Dgeo)
 ```
 
@@ -114,9 +107,9 @@ Alternative hypothesis: greater
 
 
 #AMOVA
+
 ##dartR
-https://grunwaldlab.github.io/Population_Genetics_in_R/AMOVA.html
-https://grunwaldlab.github.io/poppr/reference/poppr.amova.html
+
 https://rdrr.io/cran/dartR/man/gl.amova.html
 
 ```{r}
@@ -155,13 +148,16 @@ plot(Erigenia_amova)
 ```
 
 ##poppr
+
+https://grunwaldlab.github.io/Population_Genetics_in_R/AMOVA.html
+https://grunwaldlab.github.io/poppr/reference/poppr.amova.html
+
 ```{r assigning strata}
 Erigenia_strata<- read.table("AUG_erigenia.strata.strata_noMD_noYF2", sep= "\t", header= TRUE)
 Erigenia_strata
 ```
 
 ```{r}
-
 strata(new_Erigenia_gl) <- Erigenia_strata
 new_Erigenia_gl$strata
 ```
