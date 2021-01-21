@@ -15,7 +15,7 @@ This markdown [creates and uses a genlight](Erigenia_vcf_to_genlight.Rmd). Aspec
 We primarily use the package adegenet in this markdown, but also have code from dartR.
 
 ## Erigenia_Fstats_GenDiv.Rmd
-Here we calculate [F statistics and heterozygosity statistics](Erigenia_Fstats_GenDiv.Rmd) with hierfstat. We also check these stats with other packages ad well as make a Fst heatmap.
+Here we calculate [F statistics and heterozygosity statistics](Erigenia_Fstats_GenDiv.Rmd) with hierfstat. We also check these stats with other packages as well as make a Fst heatmap.
 
 ## Erigenia_IBD_amova.Rmd
 Contains code to do tests for [Isolation By Distance and Analysis of Molecular Variance](Erigenia_IBD_amova.Rmd) (IBD and AMOVA). We use our genlight for this. 
